@@ -7,12 +7,6 @@ class TestImport(unittest.TestCase):
         import tangier_api.api
 
 
-class TestConnection(unittest.TestCase):
-    def test_connection(self):
-        from tangier_api.api import BaseConnection
-        connection = BaseConnection()
-
-
 class TestGetSchedule(unittest.TestCase):
     def test_get_schedule(self):
         from tangier_api.api import ScheduleConnection, TESTING_SITE
