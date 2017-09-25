@@ -13,7 +13,7 @@ class TestGetSchedule(unittest.TestCase):
         connection = ScheduleConnection()
         today = moment.utcnow().strftime("%Y-%m-%d")
         three_months_ago = moment.utcnow().add(months=-2).strftime("%Y-%m-%d")
-        connection.GetSchedule(site_id=TESTING_SITE, start_date=three_months_ago, end_date=today)
+        connection.get_schedule(site_id=TESTING_SITE, start_date=three_months_ago, end_date=today)
 
 
 if __name__ == "__main__":

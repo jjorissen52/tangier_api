@@ -1,3 +1,4 @@
+import re
 import configparser, os
 
 from requests import Session
@@ -6,8 +7,9 @@ from zeep import Client
 from zeep.transports import Transport
 
 import xml.etree.ElementTree as ET
+import xmlmanip, pandas
 
-from . import helpers, xmlmanip
+from . import helpers
 
 PROJECT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 INTERFACE_CONF_FILE = os.environ.get('INTERFACE_CONF_FILE')
@@ -56,9 +58,13 @@ class ScheduleConnection:
         return self.GetSchedule(xml_string)
 
 
+class APICallError(BaseException):
+    pass
+
+
 class ProviderConnection:
 
-    def __init__(self, xml_string="", endpoint=SCHEDULE_ENDPOINT):
+    def __init__(self, xml_string="", endpoint=PROVIDER_ENDPOINT):
         """
         Injects credentials into <tanger/> root schema and
         :param xml_string: override the base xml, which is just <tangier method="schedule.request"/>
@@ -72,13 +78,55 @@ class ProviderConnection:
                                                    admin_pwd=TANGIER_PASSWORD)
         self.client = Client(endpoint, transport=Transport(session=Session()))
 
-
     def MaintainProviders(self, xml_string=""):
         return self.client.service.MaintainProviders(xml_string)
 
-    def get_provider_info(self, xml_string="", **tags):
+    def get_provider_info(self, provider_ids=None, xml_string="", **tags):
+        if not provider_ids:
+            raise APICallError("a list of provider_ids must be provided.")
+        elif not isinstance(provider_ids, list):
+            provider_ids = [provider_ids]
         xml_string = xml_string if xml_string else self.base_xml
         xml_string = xmlmanip.inject_tags(xml_string, injection_index=2, providers="")
-        xml_string = xmlmanip.inject_tags(xml_string, parent_tag="providers", **tags)
-        return xml_string
-        # self.MaintainProviders()
+        provider_dict = {}
+        for i, provider_id in enumerate(provider_ids):
+            provider_dict[f'provider__{i}'] = {"action": "info", "__inner_tag": {"emp_id": f"{provider_id}"}}
+        xml_string = xmlmanip.inject_tags(xml_string, parent_tag="providers", **provider_dict)
+
+        # return xml_string
+        return self.MaintainProviders(xml_string).encode('utf-8')
+
+    def provider_info_values_list(self, provider_ids=None):
+        xml_string = self.get_provider_info(provider_ids)
+        schema = xmlmanip.XMLSchema(xml_string)
+        provider_list = schema.search(emp_id__ne='-1')
+        return provider_list
+
+
+class ProviderReport(ProviderConnection):
+
+    def __init__(self, csv_file, *args, **kwargs):
+        self.df = pandas.read_csv(csv_file)
+        super(ProviderReport, self).__init__(*args, **kwargs)
+
+    def add_to_report(self, *args, key_column="provider_id"):
+        clean_ids = lambda x: x if not re.findall('[a-zA-Z]', f'{x}') else 0
+        self.df[key_column] = self.df[key_column].apply(clean_ids)
+        self.df[key_column] = self.df[key_column].fillna(0).astype(int)
+        provider_ids = list(self.df[key_column].unique())
+        info_list = self.provider_info_values_list(provider_ids=provider_ids)
+        get_if_in_keys = lambda x, key: x[key] if key in x.keys() else ''
+        columns_to_add = {arg: f'provider_{arg}' for arg in args}
+        for column in columns_to_add.values():
+            self.df[column] = ''
+        for index, row in self.df.iterrows():
+            provider_info = [*filter(lambda x: int(x.get("emp_id")) == int(row[key_column]), info_list)]
+            if provider_info:
+                for dict_key, df_column in columns_to_add.items():
+                    self.df.set_value(index, f'{df_column}', get_if_in_keys(provider_info[0], dict_key))
+        columns = list(self.df.columns.values)
+        reordered_columns = [key_column, *columns_to_add.values()]
+        for col in reordered_columns:
+            columns.remove(col)
+        reordered_columns.extend(columns)
+        self.df = self.df[[*reordered_columns]]
