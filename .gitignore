@@ -101,5 +101,6 @@ ENV/
 .mypy_cache/
 
 Development.ipynb
+Untitled.ipynb
 *.csv
-
+*.CSV

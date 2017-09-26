@@ -99,7 +99,8 @@ class ProviderConnection:
     def provider_info_values_list(self, provider_ids=None):
         xml_string = self.get_provider_info(provider_ids)
         schema = xmlmanip.XMLSchema(xml_string)
-        provider_list = schema.search(emp_id__ne='-1')
+        # kind of hacky way to get every element with an emp_id tag
+        provider_list = schema.search(emp_id__contains='')
         return provider_list
 
 
@@ -110,9 +111,9 @@ class ProviderReport(ProviderConnection):
         super(ProviderReport, self).__init__(*args, **kwargs)
 
     def add_to_report(self, *args, key_column="provider_id"):
-        clean_ids = lambda x: x if not re.findall('[a-zA-Z]', f'{x}') else 0
+        clean_ids = lambda x: int(float(x)) if not re.findall('[a-zA-Z]', f'{x}') else x
         self.df[key_column] = self.df[key_column].apply(clean_ids)
-        self.df[key_column] = self.df[key_column].fillna(0).astype(int)
+        self.df[key_column] = self.df[key_column].astype(str)
         provider_ids = list(self.df[key_column].unique())
         info_list = self.provider_info_values_list(provider_ids=provider_ids)
         get_if_in_keys = lambda x, key: x[key] if key in x.keys() else ''
@@ -120,7 +121,7 @@ class ProviderReport(ProviderConnection):
         for column in columns_to_add.values():
             self.df[column] = ''
         for index, row in self.df.iterrows():
-            provider_info = [*filter(lambda x: int(x.get("emp_id")) == int(row[key_column]), info_list)]
+            provider_info = [*filter(lambda x: x.get("emp_id") == row[key_column], info_list)]
             if provider_info:
                 for dict_key, df_column in columns_to_add.items():
                     self.df.set_value(index, f'{df_column}', get_if_in_keys(provider_info[0], dict_key))
