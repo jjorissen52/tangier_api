@@ -106,12 +106,15 @@ class ProviderConnection:
 
 class ProviderReport(ProviderConnection):
 
-    def __init__(self, csv_file, *args, **kwargs):
-        self.df = pandas.read_csv(csv_file)
+    def __init__(self, file, *args, **kwargs):
+        if file.upper().endswith('.CSV'):
+            self.df = pandas.read_csv(file)
+        else:
+            self.df = pandas.read_excel(file)
         super(ProviderReport, self).__init__(*args, **kwargs)
 
     def add_to_report(self, *args, key_column="provider_id"):
-        clean_ids = lambda x: int(float(x)) if not re.findall('[a-zA-Z]', f'{x}') else x
+        clean_ids = lambda x: int(float(x)) if not re.findall('[a-zA-Z]', f'{x}') else 0
         self.df[key_column] = self.df[key_column].apply(clean_ids)
         self.df[key_column] = self.df[key_column].astype(str)
         provider_ids = list(self.df[key_column].unique())

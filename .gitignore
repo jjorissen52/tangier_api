@@ -100,7 +100,7 @@ ENV/
 # mypy
 .mypy_cache/
 
-Development.ipynb
-Untitled.ipynb
+*.ipynb
 *.csv
 *.CSV
+*.xlsx
