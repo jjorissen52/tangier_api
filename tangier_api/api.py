@@ -107,7 +107,10 @@ class ProviderConnection:
 class ProviderReport(ProviderConnection):
 
     def __init__(self, file, *args, **kwargs):
-        if file.upper().endswith('.CSV'):
+        # TODO: isinstance
+        if file.__class__.__name__ == pandas.DataFrame().__class__.__name__:
+            self.df = file
+        elif file.upper().endswith('.CSV'):
             self.df = pandas.read_csv(file)
         else:
             self.df = pandas.read_excel(file)
