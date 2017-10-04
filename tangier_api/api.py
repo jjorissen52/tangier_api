@@ -44,12 +44,17 @@ class ScheduleConnection:
         self.client = Client(endpoint, transport=Transport(session=Session()))
 
     def GetSchedule(self, xml_string=""):
+        """
+        WSDL GetSchedule method
+        :param xml_string: (xml str) fully formed xml string for GetSchedule request
+        :return:
+        """
         return self.client.service.GetSchedule(xml_string)
 
     def get_schedule(self, xml_string="", **tags):
         """
-        :param xml_string: Can use this to override the default credential and/or schedule injection into base_xml
-        :param tags: stuff to be injected into the schedule. ex: start_date="2017-05-01", end_date="2017-05-02"
+        :param xml_string: (xml string)overrides the default credential and/or schedule injection into base_xml
+        :param tags: (kwargs) things to be injected into the schedule. ex: start_date="2017-05-01", end_date="2017-05-02"
         :return: xml response string with an error message or a schedule. Use tangier_api.helpers.pretty_print() to see it better.
         """
         xml_string = xml_string if xml_string else self.base_xml
@@ -109,7 +114,7 @@ class ProviderReport(ProviderConnection):
     def __init__(self, file, *args, **kwargs):
         # TODO: isinstance
         if file.__class__.__name__ == pandas.DataFrame().__class__.__name__:
-            self.df = file
+            self.df = file.copy()
         elif file.upper().endswith('.CSV'):
             self.df = pandas.read_csv(file)
         else:
@@ -126,14 +131,18 @@ class ProviderReport(ProviderConnection):
         columns_to_add = {arg: f'provider_{arg}' for arg in args}
         for column in columns_to_add.values():
             self.df[column] = ''
+        original_index_name = self.df.index.name
+        self.df = self.df.reset_index()
         for index, row in self.df.iterrows():
             provider_info = [*filter(lambda x: x.get("emp_id") == row[key_column], info_list)]
             if provider_info:
                 for dict_key, df_column in columns_to_add.items():
-                    self.df.set_value(index, f'{df_column}', get_if_in_keys(provider_info[0], dict_key))
+                    self.df.loc[index, f'{df_column}'] = get_if_in_keys(provider_info[0], dict_key)
+
         columns = list(self.df.columns.values)
         reordered_columns = [key_column, *columns_to_add.values()]
         for col in reordered_columns:
             columns.remove(col)
         reordered_columns.extend(columns)
         self.df = self.df[[*reordered_columns]]
+        self.df.set_index("index" if not original_index_name else original_index_name)
