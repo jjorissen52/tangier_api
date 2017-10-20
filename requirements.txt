@@ -2,3 +2,5 @@ requests
 zeep
 xmlmanip
 pandas
+xlrd
+moment

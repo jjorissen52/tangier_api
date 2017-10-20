@@ -23,6 +23,7 @@ SCHEDULE_ENDPOINT = config.get('tangier', 'schedule_endpoint')
 PROVIDER_ENDPOINT = config.get('tangier', 'provider_endpoint')
 LOCATION_ENDPOINT = config.get('tangier', 'location_endpoint')
 TESTING_SITE = config.get('tangier', 'testing_site')
+TESTING_NPI = config.get('tangier', 'testing_npi')
 
 
 class ScheduleConnection:
@@ -47,18 +48,55 @@ class ScheduleConnection:
         :param xml_string: (xml str) fully formed xml string for GetSchedule request
         :return:
         """
-        return self.client.service.GetSchedule(xml_string)
+        return self.client.service.GetSchedule(xml_string).encode('utf-8')
 
-    def get_schedule(self, xml_string="", **tags):
+    def get_schedule(self, xml_string="", start_date=None, end_date=None, site_id=None, **tags):
         """
         :param xml_string: (xml string)overrides the default credential and/or schedule injection into base_xml
         :param tags: (kwargs) things to be injected into the request. ex: start_date="2017-05-01", end_date="2017-05-02"
         :return: xml response string with an error message or a schedule.
         """
+        if not start_date and end_date and site_id:
+            raise APICallError('kwargs start_date, end_date, and site_id are all required.')
         xml_string = xml_string if xml_string else self.base_xml
+        tags = {"site_id": site_id, "start_date": start_date, "end_date": end_date, **tags}
         xml_string = xmlmanip.inject_tags(xml_string, injection_index=2, schedule="")
         xml_string = xmlmanip.inject_tags(xml_string, parent_tag="schedule", **tags)
         return self.GetSchedule(xml_string)
+
+    def get_schedules(self, site_ids=None, xml_string="", **tags):
+        """
+        :param xml_string: (xml string)overrides the default credential and/or schedule injection into base_xml
+        :param tags: (kwargs) things to be injected into the request. ex: start_date="2017-05-01", end_date="2017-05-02"
+        :return: xml response string with an error message or a schedule.
+        """
+        if not site_ids:
+            raise APICallError("Required kwarg site_ids must be an enumerable object of site_id's.")
+        xml_string = xml_string if xml_string else self.base_xml
+        schedule_tags_xml = {
+            f'schedule__{i}': {"__inner_tag": {"site_id": site_id,
+                                               **tags}}
+            for i, site_id in enumerate(site_ids)
+        }
+        xml_string = xmlmanip.inject_tags(xml_string, injection_index=2, **schedule_tags_xml)
+        # xml_string = xmlmanip.inject_tags(xml_string, parent_tag="schedule", **tags)
+        # xmlmanip.print_xml(xml_string)
+        return self.GetSchedule(xml_string)
+
+    def get_schedule_values_list(self, xml_string="", site_ids=None, **tags):
+        """
+        :param xml_string: (xml string)overrides the default credential and/or schedule injection into base_xml
+        :param tags: (kwargs) things to be injected into the request. ex: start_date="2017-05-01", end_date="2017-05-02"
+        :return: xml response string with an error message or a schedule.
+        """
+        if not site_ids or not issubclass(site_ids.__class__, list):
+            raise APICallError("Required kwarg site_ids must be an enumerable object of site_id's.")
+        xml_string = xml_string if xml_string else self.base_xml
+        schedule_values_list = []
+        for site_id in site_ids:
+            schedule_response = self.get_schedule(xml_string, site_id=site_id, **tags)
+            schedule_values_list.extend(xmlmanip.XMLSchema(schedule_response).search(siteid__ne=''))
+        return schedule_values_list
 
 
 class APICallError(BaseException):
@@ -147,8 +185,8 @@ class LocationConnection:
         :param xml_string: (xml string) overrides the default credential and/or location injection into base_xml
         :return: xml response string with an error message or info about a location.
         """
-        sites = {"site_id__{i}": site_id for i, site_id in enumerate(site_ids)}
-        tags = {"location": {"action": "info", "__inner_tag": sites}}
+        # sites = {"site_id": site_id for i, site_id in enumerate(site_ids)}
+        tags = {f"location__{i}": {"action": "info", "__inner_tag": {"site_id": site_id}} for i, site_id in enumerate(site_ids)}
         xml_string = xml_string if xml_string else self.base_xml
         xml_string = xmlmanip.inject_tags(xml_string, injection_index=2, locations="")
         xml_string = xmlmanip.inject_tags(xml_string, parent_tag="locations", **tags)
