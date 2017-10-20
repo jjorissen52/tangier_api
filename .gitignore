@@ -105,3 +105,4 @@ ENV/
 *.CSV
 *.xlsx
 !/Add Names by NPI.ipynb
+!/AllToCSV.ipynb
