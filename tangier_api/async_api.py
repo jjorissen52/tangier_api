@@ -3,13 +3,13 @@ import asyncio, time, xmlmanip
 from zeep.asyncio import AsyncTransport
 from zeep import Client
 
-from . import api
+from tangier_api import api
 
 
 class AsyncScheduleConnection:
     def __init__(self, xml_string="", endpoint=api.SCHEDULE_ENDPOINT):
         """
-
+        Async is actually slower than regular with Tangier. Don't use.
         :param xml_string: override the default xml, which is just <tangier method="schedule.request"/>
         :param endpoint: where the WSDL info is with routing info and SOAP API definitions
         """
@@ -33,6 +33,11 @@ class AsyncScheduleConnection:
         """
         return self.client.service.GetSchedule(xml_string)
 
+    def generate_request_list(self, start_date, end_date, site_ids):
+        if not issubclass(site_ids.__class__, list):
+            raise api.APICallError('site_ids must be a list or there is no point in an async call.')
+        return [(start_date, end_date, site_id) for site_id in site_ids]
+
     def get_schedules(self, schedule_request_list, xml_string="", **tags):
         """
         :param xml_string: (xml string)overrides the default credential and/or schedule injection into base_xml
@@ -54,13 +59,10 @@ class AsyncScheduleConnection:
             xml_string = xmlmanip.inject_tags(xml_string, injection_index=2, schedule="")
             xml_string = xmlmanip.inject_tags(xml_string, parent_tag="schedule", **schedule_tags)
             tasks.append(self.GetSchedule(xml_string))
-        st = time.time()
         future = asyncio.gather(*tasks, return_exceptions=True)
         future.add_done_callback(handle_future)
         self.loop.run_until_complete(future)
         self.loop.run_until_complete(self.transport.session.close())
-        # print("time: %.2f" % (time.time() - st))
-        # print("")
         self.good_responses, self.bad_responses = HandleResponses.sort_bad_and_good(result, schedule_request_list)
 
         return result

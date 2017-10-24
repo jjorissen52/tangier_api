@@ -1,5 +1,5 @@
 import re
-import configparser, os
+import configparser, os, datetime
 
 from requests import Session
 
@@ -27,6 +27,10 @@ TESTING_NPI = config.get('tangier', 'testing_npi')
 
 
 class ScheduleConnection:
+    in_date_format = "%m/%d/%Y"
+    datetime_format = "%Y-%m-%dT%H:%M:%S"
+    date_format = "%Y-%m-%d"
+    time_format = "%I:%M %p"
 
     def __init__(self, xml_string="", endpoint=SCHEDULE_ENDPOINT):
         """
@@ -50,7 +54,83 @@ class ScheduleConnection:
         """
         return self.client.service.GetSchedule(xml_string).encode('utf-8')
 
-    def get_schedule(self, start_date=None, end_date=None, site_id=None, xml_string="",**tags):
+    def _validate_inputs(self, start_date=None, end_date=None, site_id=None, site_ids=None, emp_id=None):
+        def timestamp_to_str(time):
+            return datetime.datetime.fromtimestamp(time).strftime("%Y-%m-%d")
+
+        if not start_date or not end_date or not (site_id or site_ids or emp_id):
+            return APICallError("start_date, end_date, and (site_id or site_ids or emp_id) are required fields.")
+        # convert start date
+        if issubclass(start_date.__class__, (int, float)):
+            try:
+                start_date = timestamp_to_str(start_date)
+            except:
+                raise APICallError("start_date must be a unix timestamp (int, float), a datetime object, "
+                                   "or a string.")
+
+        elif issubclass(start_date.__class__, (datetime.datetime)):
+            start_date = start_date.strftime("%Y-%m-%d")
+        # convert end date
+        if issubclass(end_date.__class__, (int, float)):
+            try:
+                end_date = timestamp_to_str(end_date)
+            except:
+                raise APICallError("end_date must be a unix timestamp (int, float), a datetime object, "
+                                   "or a string.")
+
+        elif issubclass(end_date.__class__, (datetime.datetime)):
+            end_date = end_date.strftime("%Y-%m-%d")
+
+        if site_ids and site_id:
+            raise APICallError('can use either site_id or site_ids, not both.')
+
+        elif site_ids and not issubclass(site_ids.__class__, list):
+            site_ids = [site_ids]
+
+        elif site_id:
+            site_ids = [site_id]
+
+        return {"start_date": start_date, "end_date": end_date, "site_id":site_id,
+                "site_ids": site_ids, "emp_id": emp_id}
+
+    def _extract_shifts(self, shifts, in_date_format=in_date_format, out_date_format=date_format):
+        shifts_date_str = shifts["@shiftdate"]
+        shifts_date_in = datetime.datetime.strptime(shifts_date_str, in_date_format)
+        shifts_date = shifts_date_in.strftime(out_date_format)
+        if issubclass(shifts['shifts']['shift'].__class__, list):
+            shifts_list = shifts['shifts']['shift']
+        else:
+            shifts_list = [shifts['shifts']['shift']]
+
+        def to_iso(shift_time, shifts_date):
+            return ScheduleConnection._time_and_date_to_iso(shift_time, shifts_date)
+
+        shifts_with_start_dates = list(map(lambda x: {"shift_start_date": to_iso(x['actualstarttime'],
+                                                                                 shifts_date),
+                                                      **x},
+                                           shifts_list))
+
+        def add_end_date(shift): return ScheduleConnection._add_end_date('shift_start_date', 'reportedminutes', shift)
+        # print(shifts_with_start_dates)
+        return list(map(lambda x: add_end_date(x), shifts_with_start_dates))
+
+    @staticmethod
+    def _add_end_date(start_datetime_key, duration_key, shift, start_datetime_format=datetime_format):
+        start_datetime_str = shift[start_datetime_key].strip()
+        start_datetime = datetime.datetime.strptime(f'{start_datetime_str}', f'{start_datetime_format}')
+        duration_str = shift[duration_key].strip()
+        duration = datetime.timedelta(minutes=int(float(duration_str)))
+        end_datetime = start_datetime + duration
+        end_datetime_str = end_datetime.isoformat()
+        return {"shift_end_date": end_datetime_str, **shift}
+
+    @staticmethod
+    def _time_and_date_to_iso(time, date, time_format=time_format, date_format=date_format):
+        # print(f'{time} {date}')
+        # print(f'{time_format} {date_format}')
+        return datetime.datetime.strptime(f'{time} {date}', f'{time_format} {date_format}').isoformat()
+
+    def get_schedule(self, start_date=None, end_date=None, site_id=None, xml_string="", **tags):
         """
         :param xml_string: (xml string)overrides the default credential and/or schedule injection into base_xml
         :param tags: (kwargs) things to be injected into the request. ex: start_date="2017-05-01", end_date="2017-05-02"
@@ -64,38 +144,40 @@ class ScheduleConnection:
         xml_string = xmlmanip.inject_tags(xml_string, parent_tag="schedule", **tags)
         return self.GetSchedule(xml_string)
 
-    def get_schedules(self, site_ids=None, xml_string="", **tags):
+    def get_schedules(self, start_date=None, end_date=None, site_ids=None, xml_string="", **tags):
+        """
+        :param xml_string: (xml string)overrides the default credential and/or schedule injection into base_xml
+        :param tags: (kwargs) things to be injected into the request. ex: start_date="2017-05-01", end_date="2017-05-02"
+        :return: xml response string with an error message or a schedule.
+        """
+        if not (site_ids and start_date and end_date):
+            raise APICallError("Required kwarg site_ids must be an enumerable object of site_id's.")
+        xml_string = xml_string if xml_string else self.base_xml
+        schedules = []
+        for site_id in site_ids:
+            schedules.append(self.get_schedule(site_id=site_id, start_date=start_date,
+                                               end_date=end_date, xml_string=xml_string))
+        return schedules
+
+    def get_schedule_values_list(self, start_date=None, end_date=None, site_ids=None, xml_string="", **tags):
         """
         :param xml_string: (xml string)overrides the default credential and/or schedule injection into base_xml
         :param tags: (kwargs) things to be injected into the request. ex: start_date="2017-05-01", end_date="2017-05-02"
         :return: xml response string with an error message or a schedule.
         """
         if not site_ids:
-            raise APICallError("Required kwarg site_ids must be an enumerable object of site_id's.")
-        xml_string = xml_string if xml_string else self.base_xml
-        schedule_tags_xml = {
-            f'schedule__{i}': {"__inner_tag": {"site_id": site_id,
-                                               **tags}}
-            for i, site_id in enumerate(site_ids)
-        }
-        xml_string = xmlmanip.inject_tags(xml_string, injection_index=2, **schedule_tags_xml)
-        # xml_string = xmlmanip.inject_tags(xml_string, parent_tag="schedule", **tags)
-        # xmlmanip.print_xml(xml_string)
-        return self.GetSchedule(xml_string)
-
-    def get_schedule_values_list(self, xml_string="", site_ids=None, **tags):
-        """
-        :param xml_string: (xml string)overrides the default credential and/or schedule injection into base_xml
-        :param tags: (kwargs) things to be injected into the request. ex: start_date="2017-05-01", end_date="2017-05-02"
-        :return: xml response string with an error message or a schedule.
-        """
-        if not site_ids or not issubclass(site_ids.__class__, list):
-            raise APICallError("Required kwarg site_ids must be an enumerable object of site_id's.")
+            raise APICallError("kwarg site_ids is required.")
+        elif not issubclass(site_ids.__class__, list):
+            site_ids = [site_ids]
         xml_string = xml_string if xml_string else self.base_xml
         schedule_values_list = []
+
         for site_id in site_ids:
-            schedule_response = self.get_schedule(xml_string, site_id=site_id, **tags)
-            schedule_values_list.extend(xmlmanip.XMLSchema(schedule_response).search(siteid__ne=''))
+            schedule_response = self.get_schedule(xml_string=xml_string, start_date=start_date, end_date=end_date,
+                                                  site_id=site_id, **tags)
+            temp_values_list = xmlmanip.XMLSchema(schedule_response).search('@shiftdate', "", comparison='ne')
+            for shifts in temp_values_list:
+                schedule_values_list.extend(self._extract_shifts(shifts))
         return schedule_values_list
 
 
