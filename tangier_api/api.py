@@ -50,7 +50,7 @@ class ScheduleConnection:
         """
         return self.client.service.GetSchedule(xml_string).encode('utf-8')
 
-    def get_schedule(self, xml_string="", start_date=None, end_date=None, site_id=None, **tags):
+    def get_schedule(self, start_date=None, end_date=None, site_id=None, xml_string="",**tags):
         """
         :param xml_string: (xml string)overrides the default credential and/or schedule injection into base_xml
         :param tags: (kwargs) things to be injected into the request. ex: start_date="2017-05-01", end_date="2017-05-02"

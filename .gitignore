@@ -100,9 +100,11 @@ ENV/
 # mypy
 .mypy_cache/
 
+.idea/
 *.ipynb
 *.csv
 *.CSV
 *.xlsx
 !/Add Names by NPI.ipynb
 !/AllToCSV.ipynb
+good_responses
