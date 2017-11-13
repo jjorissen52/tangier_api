@@ -49,6 +49,7 @@ class ScheduleConnection:
     def GetSchedule(self, xml_string=""):
         """
         WSDL GetSchedule method
+
         :param xml_string: (xml str) fully formed xml string for GetSchedule request
         :return:
         """
@@ -190,6 +191,7 @@ class ProviderConnection:
     def __init__(self, xml_string="", endpoint=PROVIDER_ENDPOINT):
         """
         Injects credentials into <tanger/> root schema and
+
         :param xml_string: override the base xml, which is just <tangier method="schedule.request"/>
         :param endpoint: where the WSDL info is with routing info and SOAP API definitions
         """
@@ -207,6 +209,7 @@ class ProviderConnection:
     def get_provider_info(self, provider_ids=None, xml_string="", **tags):
         """
         Method to retrieve info on all providers corresponding to the list "provider_ids"
+
         :param provider_ids: (list) of all emp_ids corresponding to desired provider info
         :param xml_string: (xml string) overrides default xml string provided by the instantiation of the class object
         :param tags: (kwargs) things to be injected into the request. ex: start_date="2017-05-01", end_date="2017-05-02"
@@ -229,6 +232,7 @@ class ProviderConnection:
     def provider_info_values_list(self, provider_ids=None):
         """
         Returns a Searchable List object (subclass of list) of all providers returned by get_provider_info
+
         :param provider_ids: (list) of all emp_ids corresponding to desired provider info
         :return: (SearchableList) of all providers returned by get_provider_info
         """
@@ -257,6 +261,7 @@ class LocationConnection:
     def MaintainLocations(self, xml_string=""):
         """
         WSDL GetLocation method
+
         :param xml_string: (xml str) fully formed xml string for GetLocation request
         :return:
         """
@@ -302,6 +307,7 @@ class ProviderReport(ProviderConnection):
     def add_to_report(self, *args, key_column="provider_id"):
         """
         Adds the specified provider information to an excel or csv report according to NPI (emp_id)
+
         :param args: (list) of provider fields to be retrieved from tangier and added to the report
         :param key_column: (str) indicates the header name of the column that contains npis or emp_ids on the report
         :return: None

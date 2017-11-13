@@ -5,3 +5,4 @@ xmlmanip
 pandas
 xlrd
 moment
+aiohttp

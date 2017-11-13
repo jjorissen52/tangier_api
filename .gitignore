@@ -108,3 +108,6 @@ ENV/
 !/Add Names by NPI.ipynb
 !/AllToCSV.ipynb
 good_responses
+/tangier_api.egg-info/
+/dist/
+/.ipynb_checkpoints/
