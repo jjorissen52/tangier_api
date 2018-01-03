@@ -9,10 +9,8 @@ from zeep.transports import Transport
 import xml.etree.ElementTree as ET
 import xmlmanip, pandas
 
-PROJECT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 INTERFACE_CONF_FILE = os.environ.get('INTERFACE_CONF_FILE')
-INTERFACE_CONF_FILE = os.path.join(INTERFACE_CONF_FILE) if INTERFACE_CONF_FILE else os.path.join(PROJECT_DIR,
-                                                                                                 'tangier.conf')
+INTERFACE_CONF_FILE = os.path.join(INTERFACE_CONF_FILE) if INTERFACE_CONF_FILE else 'tangier.conf'
 
 config = configparser.ConfigParser()
 config.read(INTERFACE_CONF_FILE)
@@ -26,16 +24,36 @@ TESTING_SITE = config.get('tangier', 'testing_site')
 TESTING_NPI = config.get('tangier', 'testing_npi')
 
 
+class APICallError(BaseException):
+    pass
+
+class APIError(BaseException):
+    pass
+
+def date_ranges(start_date, end_date, date_format='%Y-%m-%d'):
+    start_date = datetime.datetime.strptime(start_date, date_format)
+    end_date = datetime.datetime.strptime(end_date, date_format)
+    ranges = []
+    while start_date + datetime.timedelta(weeks=8) < end_date:
+        ranges.append((start_date.strftime(date_format), (start_date + datetime.timedelta(weeks=8)).strftime(date_format)))
+        start_date = start_date + datetime.timedelta(weeks=8, days=1)
+    ranges.append((start_date.strftime(date_format), end_date.strftime(date_format)))
+    return ranges
+
+
 class ScheduleConnection:
     in_date_format = "%m/%d/%Y"
     datetime_format = "%Y-%m-%dT%H:%M:%S"
     date_format = "%Y-%m-%d"
     time_format = "%I:%M %p"
 
-    def __init__(self, xml_string="", endpoint=SCHEDULE_ENDPOINT):
+    def __init__(self, xml_string="", site_file=None, site_id_column_header='site_id', endpoint=SCHEDULE_ENDPOINT):
         """
+        Initializes the ScheduleConnection. This method attempts to authenticate the connection, pulls site_ids from the site_id file, and determines WSDL definition info
 
         :param xml_string: override the default xml, which is just <tangier method="schedule.request"/>
+        :param site_file: (str) fully qualified path to xlsx or csv document containing all tangier site ids
+        :param site_id_column_header: (str) header name of column containing site ids in site_file
         :param endpoint: where the WSDL info is with routing info and SOAP API definitions
         """
         super(self.__class__, self).__init__()
@@ -43,8 +61,26 @@ class ScheduleConnection:
             self.base_xml = """<tangier version="1.0" method="schedule.request"></tangier>"""
         else:
             self.base_xml = xml_string
+        if site_file:
+            if site_file.endswith('.xlsx'):
+                df = pandas.read_excel(site_file)
+                if site_id_column_header in list(df.columns):
+                    self.site_ids = list(pandas.read_excel(site_file)['site_id'])
+                else:
+                    print('Site ids must be in a column with the header "{0}"'.format(site_id_column_header))
+            elif site_file.endswith('.csv'):
+                df = pandas.read_csv(site_file)
+                if site_id_column_header in list(df.columns):
+                    self.site_ids = list(pandas.read_excel(site_file)['site_id'])
+                else:
+                    print('Site ids must be in a column with the header "{0}"'.format(site_id_column_header))
+            else:
+                self.site_ids = []
+                print('Did not read site file; must be a csv or xlsx document.')
+
         self.base_xml = xmlmanip.inject_tags(self.base_xml, user_name=TANGIER_USERNAME, user_pwd=TANGIER_PASSWORD)
         self.client = Client(endpoint, transport=Transport(session=Session()))
+        self.saved_schedule = None
 
     def GetSchedule(self, xml_string=""):
         """
@@ -54,45 +90,6 @@ class ScheduleConnection:
         :return:
         """
         return self.client.service.GetSchedule(xml_string).encode('utf-8')
-
-    def _validate_inputs(self, start_date=None, end_date=None, site_id=None, site_ids=None, emp_id=None):
-        def timestamp_to_str(time):
-            return datetime.datetime.fromtimestamp(time).strftime("%Y-%m-%d")
-
-        if not start_date or not end_date or not (site_id or site_ids or emp_id):
-            return APICallError("start_date, end_date, and (site_id or site_ids or emp_id) are required fields.")
-        # convert start date
-        if issubclass(start_date.__class__, (int, float)):
-            try:
-                start_date = timestamp_to_str(start_date)
-            except:
-                raise APICallError("start_date must be a unix timestamp (int, float), a datetime object, "
-                                   "or a string.")
-
-        elif issubclass(start_date.__class__, (datetime.datetime)):
-            start_date = start_date.strftime("%Y-%m-%d")
-        # convert end date
-        if issubclass(end_date.__class__, (int, float)):
-            try:
-                end_date = timestamp_to_str(end_date)
-            except:
-                raise APICallError("end_date must be a unix timestamp (int, float), a datetime object, "
-                                   "or a string.")
-
-        elif issubclass(end_date.__class__, (datetime.datetime)):
-            end_date = end_date.strftime("%Y-%m-%d")
-
-        if site_ids and site_id:
-            raise APICallError('can use either site_id or site_ids, not both.')
-
-        elif site_ids and not issubclass(site_ids.__class__, list):
-            site_ids = [site_ids]
-
-        elif site_id:
-            site_ids = [site_id]
-
-        return {"start_date": start_date, "end_date": end_date, "site_id":site_id,
-                "site_ids": site_ids, "emp_id": emp_id}
 
     def _extract_shifts(self, shifts, in_date_format=in_date_format, out_date_format=date_format):
         shifts_date_str = shifts["@shiftdate"]
@@ -111,8 +108,9 @@ class ScheduleConnection:
                                                       **x},
                                            shifts_list))
 
-        def add_end_date(shift): return ScheduleConnection._add_end_date('shift_start_date', 'reportedminutes', shift)
-        # print(shifts_with_start_dates)
+        def add_end_date(shift):
+            return ScheduleConnection._add_end_date('shift_start_date', 'reportedminutes', shift)
+
         return list(map(lambda x: add_end_date(x), shifts_with_start_dates))
 
     @staticmethod
@@ -127,14 +125,17 @@ class ScheduleConnection:
 
     @staticmethod
     def _time_and_date_to_iso(time, date, time_format=time_format, date_format=date_format):
-        # print(f'{time} {date}')
-        # print(f'{time_format} {date_format}')
         return datetime.datetime.strptime(f'{time} {date}', f'{time_format} {date_format}').isoformat()
 
     def get_schedule(self, start_date=None, end_date=None, site_id=None, xml_string="", **tags):
         """
+        Wrapper for the GetSchedule method which facilitates adding necessary tags to the default xml string. Pulls schedule for one site for a given date range.
+
+        :param start_date: (str) %Y-%m-%d date string indicating the beginning of the range from which to pull the schedule
+        :param end_date: (str) %Y-%m-%d date string indicating the ending of the range from which to pull the schedule
+        :param site_id: (str or int) id corresponding to the site that the schedule will be pulled from
         :param xml_string: (xml string)overrides the default credential and/or schedule injection into base_xml
-        :param tags: (kwargs) things to be injected into the request. ex: start_date="2017-05-01", end_date="2017-05-02"
+        :param tags: (kwargs) things to be injected into the request.
         :return: xml response string with an error message or a schedule.
         """
         if not start_date and end_date and site_id:
@@ -147,10 +148,18 @@ class ScheduleConnection:
 
     def get_schedules(self, start_date=None, end_date=None, site_ids=None, xml_string="", **tags):
         """
-        :param xml_string: (xml string)overrides the default credential and/or schedule injection into base_xml
-        :param tags: (kwargs) things to be injected into the request. ex: start_date="2017-05-01", end_date="2017-05-02"
+        Wrapper for the GetSchedule method which facilitates adding necessary tags to the default xml string.
+        Pulls schedule for multiple sites for a given date range. Makes multiple API calls to get schedules from multiple facilities.
+
+        :param start_date: (str) %Y-%m-%d date string indicating the beginning of the range from which to pull the schedule
+        :param end_date: (str) %Y-%m-%d date string indicating the ending of the range from which to pull the schedule
+        :param site_ids: (list or None) list of ids corresponding to the site(s) that the schedule will be pulled from, defaults to the list pulled from site_file in the __init__ function
+        :param xml_string: (xml string) overrides the default credential and/or schedule injection into base_xml
+        :param tags: (kwargs) things to be injected into the request.
         :return: xml response string with an error message or a schedule.
         """
+        if not site_ids:
+            site_ids = self.site_ids
         if not (site_ids and start_date and end_date):
             raise APICallError("Required kwarg site_ids must be an enumerable object of site_id's.")
         xml_string = xml_string if xml_string else self.base_xml
@@ -162,12 +171,19 @@ class ScheduleConnection:
 
     def get_schedule_values_list(self, start_date=None, end_date=None, site_ids=None, xml_string="", **tags):
         """
-        :param xml_string: (xml string)overrides the default credential and/or schedule injection into base_xml
-        :param tags: (kwargs) things to be injected into the request. ex: start_date="2017-05-01", end_date="2017-05-02"
-        :return: xml response string with an error message or a schedule.
+        Wrapper for the get_schedules function that returns the retrieved schedules as a list of dicts. This can easily be converted into a DataFrame
+
+        :param start_date: (str) %Y-%m-%d date string indicating the beginning of the range from which to pull the schedule
+        :param end_date: (str) %Y-%m-%d date string indicating the ending of the range from which to pull the schedule
+        :param site_ids: (list or None) list of ids corresponding to the site(s) that the schedule will be pulled from, defaults to the list pulled from site_file in the __init__ function
+        :param xml_string: (xml string) overrides the default credential and/or schedule injection into base_xml
+        :param tags: (kwargs) things to be injected into the request.
+        :return: (OrderedDict) filled with schedules.
         """
-        if not site_ids:
+        if not site_ids and not self.site_ids:
             raise APICallError("kwarg site_ids is required.")
+        elif not site_ids:
+            site_ids = self.site_ids
         elif not issubclass(site_ids.__class__, list):
             site_ids = [site_ids]
         xml_string = xml_string if xml_string else self.base_xml
@@ -181,9 +197,146 @@ class ScheduleConnection:
                 schedule_values_list.extend(self._extract_shifts(shifts))
         return schedule_values_list
 
+    def save_schedule_from_range(self, start_date=None, end_date=None, site_ids=None, xml_string="", **tags):
+        """
+        Saves schedule for indicated date range and facilities to ScheduleConnection object
 
-class APICallError(BaseException):
-    pass
+        :param start_date: (str) %Y-%m-%d date string indicating the beginning of the range from which to pull the schedule
+        :param end_date: (str) %Y-%m-%d date string indicating the ending of the range from which to pull the schedule
+        :param site_ids: (list or None) list of ids corresponding to the site(s) that the schedule will be pulled from, defaults to the list pulled from site_file in the __init__ function
+        :param xml_string: (xml string) overrides the default credential and/or schedule injection into base_xml
+        :param tags: (kwargs) things to be injected into the request.
+        :return:
+        """
+        schedule_values_list = []
+        ranges = date_ranges(start_date, end_date)
+        for date_range in ranges:
+            print(date_range)
+            schedule_values_list.extend(
+                self.get_schedule_values_list(date_range[0], date_range[1], site_ids, xml_string, **tags))
+        df = pandas.DataFrame(schedule_values_list).sort_values(['shift_start_date', 'shift_end_date']).reset_index()
+        df = df.drop(['index'], axis=1)
+        self.saved_schedule = df.copy()
+
+    def get_schedule_empties(self, info=False):
+        """
+        Gets DataFrame of all entries from schedule which were not worked (reportedminutes == 0) in the saved_schedule
+
+        :param info: (bool) whether or not to print out progress
+        :return: (DataFrame) of all entries from schedule which were not worked (reportedminutes == 0)
+        """
+        if self.saved_schedule is None:
+            raise APICallError('There must be a saved schedule from save_schedule_from_range.')
+        df = self.saved_schedule.copy()
+        empties = df[df['reportedminutes'] == '0']
+        return empties
+
+    def get_schedule_conflicts(self, info=False):
+        """
+        Gets DataFrame of all entries where an employee worked a double-booked shift in the saved_schedule
+
+        :param info: (bool) whether or not to print out progress
+        :return: (DataFrame) of all entries where an employee worked a double-booked shift
+        """
+        if self.saved_schedule is None:
+            raise APICallError('There must be a saved schedule from save_schedule_from_range.')
+        df = self.saved_schedule.copy()
+        df = df.sort_values(['shift_start_date', 'shift_end_date'])
+        conflict_df = pandas.DataFrame()
+        unique_ids = list(df['empid'].dropna().unique())
+        for c, emp_id in enumerate(unique_ids):
+            if (c % 13 == 12 or c == len(unique_ids) - 1) and info:
+                print(f'{(c+1)/len(unique_ids)*100:>5.2f}%')
+            elif info:
+                print(f'{(c+1)/len(unique_ids)*100:>5.2f}%', end=',  ')
+            emp_sched = df.loc[df['empid'] == emp_id]
+            for i, row in emp_sched.iterrows():
+                for j, row2 in emp_sched.iterrows():
+                    if j <= i:
+                        continue
+                    elif row2['shift_start_date'] > row['shift_end_date']:
+                        break
+                    if ((row['shift_start_date'] < row2['shift_end_date']) and (
+                            row['shift_end_date'] > row2['shift_start_date'])):
+                        row['conflict_shift_start_date'], row['conflict_shift_end_date'] = row2['shift_start_date'], \
+                                                                                           row2['shift_end_date']
+                        row['conflict_index'] = j
+                        conflict_df = conflict_df.append(row[['conflict_index', 'empid', 'shift_start_date',
+                                                              'shift_end_date', 'conflict_shift_start_date',
+                                                              'conflict_shift_end_date']])
+        if not conflict_df.empty:
+            conflict_df['conflict_index'] = conflict_df['conflict_index'].astype(int)
+        return conflict_df
+
+    def get_schedule_duplicates(self, info=False):
+        """
+        Gets DataFrame of all duplicate entries in the saved_schedule
+
+        :param info: (bool) whether or not to print out progress
+        :return: (DataFrame) of all duplicate entries
+        """
+        if self.saved_schedule is None:
+            raise APICallError('There must be a saved schedule from save_schedule_from_range.')
+        df = self.saved_schedule.copy()
+        dupe_df = pandas.DataFrame()
+        unique_ids = list(df['empid'].dropna().unique())
+        for c, emp_id in enumerate(unique_ids):
+            if (c % 13 == 12 or c == len(unique_ids) - 1) and info:
+                print(f'{(c+1)/len(unique_ids)*100:>5.2f}%')
+            elif info:
+                print(f'{(c+1)/len(unique_ids)*100:>5.2f}%', end=',  ')
+            emp_sched = df.loc[df['empid'] == emp_id]
+            for i, row in emp_sched.iterrows():
+                for j, row2 in emp_sched.iterrows():
+                    if j <= i:
+                        continue
+                    elif row2['shift_start_date'] > row['shift_end_date']:
+                        break
+                    if ((row['shift_start_date'] == row2['shift_start_date']) and (
+                            row['shift_end_date'] == row2['shift_end_date'])):
+                        row['dupe_shift_start_date'], row['dupe_shift_end_date'] = row2['shift_start_date'], row2[
+                            'shift_end_date']
+                        row['dupe_index'] = j
+                        dupe_df = dupe_df.append(row[['dupe_index', 'empid', 'shift_start_date', 'shift_end_date',
+                                                      'dupe_shift_start_date', 'dupe_shift_end_date']])
+
+        if not dupe_df.empty:
+            dupe_df['dupe_index'] = dupe_df['dupe_index'].astype(int)
+        return dupe_df
+
+    def remove_schedule_empties(self):
+        """
+        Removes all entries from schedule which were not worked (reportedminutes == 0) in the saved_schedule
+
+        :return:
+        """
+        initial_length = self.saved_schedule.shape[0]
+        empty_df = self.get_schedule_empties().reset_index()
+        rows_to_remove = empty_df.shape[0]
+        temp_df = self.saved_schedule.drop(empty_df['index'])
+        if temp_df.shape[0] == initial_length - rows_to_remove:
+            self.saved_schedule = temp_df
+        else:
+            raise APIError(
+                'An unexpected number of entries were removed; this indicates an issue with the saved schedule.')
+        print(f'Removed {rows_to_remove} empties.')
+
+    def remove_schedule_duplicates(self):
+        """
+        Removes all duplicate entries in the saved_schedule
+
+        :return:
+        """
+        initial_length = self.saved_schedule.shape[0]
+        dupe_df = self.get_schedule_duplicates()
+        rows_to_remove = dupe_df.shape[0]
+        temp_df = self.saved_schedule.drop(dupe_df['dupe_index'])
+        if temp_df.shape[0] == initial_length - rows_to_remove:
+            self.saved_schedule = temp_df
+        else:
+            raise APIError(
+                'An unexpected number of entries were removed; this indicates an issue with the saved schedule.')
+        print(f'Removed {rows_to_remove} duplicates.')
 
 
 class ProviderConnection:
