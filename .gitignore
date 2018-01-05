@@ -101,12 +101,12 @@ ENV/
 .mypy_cache/
 
 .idea/
-*.ipynb
+notebooks/
 *.csv
 *.CSV
 *.xlsx
-!/Add Names by NPI.ipynb
-!/AllToCSV.ipynb
+!/notebooks/Add Names by NPI.ipynb
+!/notebooks/AllToCSV.ipynb
 good_responses
 /tangier_api.egg-info/
 /dist/

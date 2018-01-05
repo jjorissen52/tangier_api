@@ -1,5 +1,7 @@
 import re
-import configparser, os, datetime
+import configparser, os, datetime, logging
+from functools import wraps
+import random
 
 from requests import Session
 
@@ -7,12 +9,12 @@ from zeep import Client
 from zeep.transports import Transport
 
 import xml.etree.ElementTree as ET
-import xmlmanip, pandas
+import xmlmanip, pandas, mylittlehelpers, numpy
 
 INTERFACE_CONF_FILE = os.environ.get('INTERFACE_CONF_FILE')
 INTERFACE_CONF_FILE = os.path.join(INTERFACE_CONF_FILE) if INTERFACE_CONF_FILE else 'tangier.conf'
 
-config = configparser.ConfigParser()
+config = configparser.ConfigParser(interpolation=configparser.ExtendedInterpolation())
 config.read(INTERFACE_CONF_FILE)
 
 TANGIER_USERNAME = config.get('tangier', 'username')
@@ -22,13 +24,27 @@ PROVIDER_ENDPOINT = config.get('tangier', 'provider_endpoint')
 LOCATION_ENDPOINT = config.get('tangier', 'location_endpoint')
 TESTING_SITE = config.get('tangier', 'testing_site')
 TESTING_NPI = config.get('tangier', 'testing_npi')
-
+LOG_DIR = config.get('tangier', 'log_dir')
+now = datetime.datetime.now()
+LOG_DIR_INSERT = f'{now.strftime("%Y-%m-%d")}-{int(now.timestamp())}'
+SCHEDULE_LOG_FILE = os.path.join(LOG_DIR, LOG_DIR_INSERT, f'schedule_log.txt'.upper())
+DUPE_LOG_FILE = os.path.join(LOG_DIR, LOG_DIR_INSERT, f'duplicates_log.txt'.upper())
+EMPTIES_LOG_FILE = os.path.join(LOG_DIR, LOG_DIR_INSERT, f'empties_log.txt'.upper())
+CONFLICTS_LOG_FILE = os.path.join(LOG_DIR, LOG_DIR_INSERT, f'conflicts_log.txt'.upper())
+INFO_LOG_FILE = os.path.join(LOG_DIR, LOG_DIR_INSERT, f'info_log.txt'.upper())
 
 class APICallError(BaseException):
     pass
 
 class APIError(BaseException):
     pass
+
+schedule_logger = mylittlehelpers.setup_logger('schedule_logger', SCHEDULE_LOG_FILE)
+duplicates_logger = mylittlehelpers.setup_logger('duplicates_logger', DUPE_LOG_FILE)
+empties_logger = mylittlehelpers.setup_logger('empties_logger', EMPTIES_LOG_FILE)
+conflicts_logger = mylittlehelpers.setup_logger('conflicts_logger', CONFLICTS_LOG_FILE)
+info_logger = mylittlehelpers.setup_logger('info_logger', INFO_LOG_FILE)
+
 
 def date_ranges(start_date, end_date, date_format='%Y-%m-%d'):
     start_date = datetime.datetime.strptime(start_date, date_format)
@@ -47,7 +63,8 @@ class ScheduleConnection:
     date_format = "%Y-%m-%d"
     time_format = "%I:%M %p"
 
-    def __init__(self, xml_string="", site_file=None, site_id_column_header='site_id', endpoint=SCHEDULE_ENDPOINT):
+    def __init__(self, xml_string="", site_file=None, site_id_column_header='site_id', testing=False,
+                 endpoint=SCHEDULE_ENDPOINT):
         """
         Initializes the ScheduleConnection. This method attempts to authenticate the connection, pulls site_ids from the site_id file, and determines WSDL definition info
 
@@ -64,19 +81,21 @@ class ScheduleConnection:
         if site_file:
             if site_file.endswith('.xlsx'):
                 df = pandas.read_excel(site_file)
-                if site_id_column_header in list(df.columns):
-                    self.site_ids = list(pandas.read_excel(site_file)['site_id'])
-                else:
-                    print('Site ids must be in a column with the header "{0}"'.format(site_id_column_header))
             elif site_file.endswith('.csv'):
                 df = pandas.read_csv(site_file)
-                if site_id_column_header in list(df.columns):
-                    self.site_ids = list(pandas.read_excel(site_file)['site_id'])
-                else:
-                    print('Site ids must be in a column with the header "{0}"'.format(site_id_column_header))
             else:
-                self.site_ids = []
+                df = pandas.DataFrame()
                 print('Did not read site file; must be a csv or xlsx document.')
+
+            if not df.empty and site_id_column_header in list(df.columns):
+                if testing:
+                    self.site_ids = list(numpy.random.choice(df[site_id_column_header], 20, replace=False))
+                else:
+                    self.site_ids = list(df[site_id_column_header])
+            elif df.emtpy:
+                self.site_ids = []
+            else:
+                print('Site ids must be in a column with the header "{0}"'.format(site_id_column_header))
 
         self.base_xml = xmlmanip.inject_tags(self.base_xml, user_name=TANGIER_USERNAME, user_pwd=TANGIER_PASSWORD)
         self.client = Client(endpoint, transport=Transport(session=Session()))
@@ -211,12 +230,13 @@ class ScheduleConnection:
         schedule_values_list = []
         ranges = date_ranges(start_date, end_date)
         for date_range in ranges:
-            print(date_range)
+            print(str(date_range))
             schedule_values_list.extend(
                 self.get_schedule_values_list(date_range[0], date_range[1], site_ids, xml_string, **tags))
         df = pandas.DataFrame(schedule_values_list).sort_values(['shift_start_date', 'shift_end_date']).reset_index()
         df = df.drop(['index'], axis=1)
         self.saved_schedule = df.copy()
+        schedule_logger.info(self.saved_schedule.to_csv())
 
     def get_schedule_empties(self, info=False):
         """
@@ -304,6 +324,24 @@ class ScheduleConnection:
             dupe_df['dupe_index'] = dupe_df['dupe_index'].astype(int)
         return dupe_df
 
+    def generate_duplicates_report(self, dupes):
+        dupes = dupes.reset_index()
+        # dupes_left will have originals, dupes_right will have duplicates of originals
+        dupes_left = self.saved_schedule.loc[dupes['index']].reset_index()
+        dupes_right = self.saved_schedule.loc[dupes['dupe_index']].reset_index()
+        # we append and sort on the two indices, the final result has alternating rows of orignals and duplicates
+        dupes_append = dupes_left.append(dupes_right).reset_index().sort_values(['level_0', 'index'])
+        dupes_append = dupes_append.set_index(['level_0'])
+        return dupes_append
+
+    def generate_conflicts_report(self, conflicts):
+        conflicts = conflicts.reset_index()
+        conflicts_left = self.saved_schedule.loc[conflicts['index']].reset_index()
+        conflicts_right = self.saved_schedule.loc[conflicts['conflict_index']].reset_index()
+        conflicts_append = conflicts_left.append(conflicts_right).reset_index().sort_values(['level_0', 'index'])
+        conflicts_append = conflicts_append.set_index(['level_0'])
+        return conflicts_append
+
     def remove_schedule_empties(self):
         """
         Removes all entries from schedule which were not worked (reportedminutes == 0) in the saved_schedule
@@ -312,11 +350,17 @@ class ScheduleConnection:
         """
         initial_length = self.saved_schedule.shape[0]
         empty_df = self.get_schedule_empties().reset_index()
+        if empty_df.empty:
+            print('No empties to remove.')
+            empties_logger.info('No empties to remove.')
+            return
         rows_to_remove = empty_df.shape[0]
         temp_df = self.saved_schedule.drop(empty_df['index'])
         if temp_df.shape[0] == initial_length - rows_to_remove:
             self.saved_schedule = temp_df
+            empties_logger.info(empty_df.to_csv())
         else:
+            error_logger.error('ERROR: Empties could not be removed.')
             raise APIError(
                 'An unexpected number of entries were removed; this indicates an issue with the saved schedule.')
         print(f'Removed {rows_to_remove} empties.')
@@ -329,14 +373,48 @@ class ScheduleConnection:
         """
         initial_length = self.saved_schedule.shape[0]
         dupe_df = self.get_schedule_duplicates()
+        # report must be generated before the duplicates are removed
+        duplicates_report = self.generate_duplicates_report(dupe_df)
+        if dupe_df.empty:
+            print('No duplicates to remove.')
+            duplicates_logger.info('No duplicates to remove.')
+            return
         rows_to_remove = dupe_df.shape[0]
         temp_df = self.saved_schedule.drop(dupe_df['dupe_index'])
         if temp_df.shape[0] == initial_length - rows_to_remove:
             self.saved_schedule = temp_df
+            duplicates_logger.info(duplicates_report.to_csv(index=False))
         else:
+            error_logger.error('ERROR: Duplicates could not be removed.')
             raise APIError(
                 'An unexpected number of entries were removed; this indicates an issue with the saved schedule.')
         print(f'Removed {rows_to_remove} duplicates.')
+
+    def remove_schedule_conflicts(self):
+        """
+        Removes all conflicting entries in the saved_schedule
+
+        :return:
+        """
+        initial_length = self.saved_schedule.shape[0]
+        conflict_df = self.get_schedule_conflicts()
+        # report must be generated before the duplicates are removed
+        conflicts_report = self.generate_conflicts_report(conflict_df)
+        if conflict_df.empty:
+            print('No duplicates to remove.')
+            conflicts_logger.info('No conflicts to remove.')
+            return
+        rows_to_remove = 2 * conflict_df.shape[0]
+        temp_df = self.saved_schedule.drop(conflict_df['conflict_index'])
+        temp_df = temp_df.drop(conflict_df.reset_index()['index'])
+        if temp_df.shape[0] == initial_length - rows_to_remove:
+            self.saved_schedule = temp_df
+            conflicts_logger.info(conflicts_report.to_csv(index=False))
+        else:
+            info_logger.error('ERROR: Conflicts could not be removed.')
+            raise APIError(
+                'An unexpected number of entries were removed; this indicates an issue with the saved schedule.')
+        print(f'Removed {rows_to_remove} conflicts.')
 
 
 class ProviderConnection:
