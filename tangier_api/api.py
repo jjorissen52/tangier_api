@@ -27,11 +27,11 @@ TESTING_NPI = config.get('tangier', 'testing_npi')
 LOG_DIR = config.get('tangier', 'log_dir')
 now = datetime.datetime.now()
 LOG_DIR_INSERT = f'{now.strftime("%Y-%m-%d")}-{int(now.timestamp())}'
-SCHEDULE_LOG_FILE = os.path.join(LOG_DIR, LOG_DIR_INSERT, f'schedule_log.txt'.upper())
-DUPE_LOG_FILE = os.path.join(LOG_DIR, LOG_DIR_INSERT, f'duplicates_log.txt'.upper())
-EMPTIES_LOG_FILE = os.path.join(LOG_DIR, LOG_DIR_INSERT, f'empties_log.txt'.upper())
-CONFLICTS_LOG_FILE = os.path.join(LOG_DIR, LOG_DIR_INSERT, f'conflicts_log.txt'.upper())
-INFO_LOG_FILE = os.path.join(LOG_DIR, LOG_DIR_INSERT, f'info_log.txt'.upper())
+# SCHEDULE_LOG_FILE = os.path.join(LOG_DIR, LOG_DIR_INSERT, f'schedule_log.txt'.upper())
+# DUPE_LOG_FILE = os.path.join(LOG_DIR, LOG_DIR_INSERT, f'duplicates_log.txt'.upper())
+# EMPTIES_LOG_FILE = os.path.join(LOG_DIR, LOG_DIR_INSERT, f'empties_log.txt'.upper())
+# CONFLICTS_LOG_FILE = os.path.join(LOG_DIR, LOG_DIR_INSERT, f'conflicts_log.txt'.upper())
+# INFO_LOG_FILE = os.path.join(LOG_DIR, LOG_DIR_INSERT, f'info_log.txt'.upper())
 
 class APICallError(BaseException):
     pass
@@ -39,11 +39,17 @@ class APICallError(BaseException):
 class APIError(BaseException):
     pass
 
-schedule_logger = mylittlehelpers.setup_logger('schedule_logger', SCHEDULE_LOG_FILE)
-duplicates_logger = mylittlehelpers.setup_logger('duplicates_logger', DUPE_LOG_FILE)
-empties_logger = mylittlehelpers.setup_logger('empties_logger', EMPTIES_LOG_FILE)
-conflicts_logger = mylittlehelpers.setup_logger('conflicts_logger', CONFLICTS_LOG_FILE)
-info_logger = mylittlehelpers.setup_logger('info_logger', INFO_LOG_FILE)
+# schedule_logger = mylittlehelpers.setup_logger('schedule_logger', SCHEDULE_LOG_FILE)
+# duplicates_logger = mylittlehelpers.setup_logger('duplicates_logger', DUPE_LOG_FILE)
+# empties_logger = mylittlehelpers.setup_logger('empties_logger', EMPTIES_LOG_FILE)
+# conflicts_logger = mylittlehelpers.setup_logger('conflicts_logger', CONFLICTS_LOG_FILE)
+# info_logger = mylittlehelpers.setup_logger('info_logger', INFO_LOG_FILE)
+
+schedule_logger = logging.getLogger('schedule_logger')
+duplicates_logger = logging.getLogger('duplicates_logger')
+empties_logger = logging.getLogger('empties_logger')
+conflicts_logger = logging.getLogger('conflicts_logger')
+info_logger = logging.getLogger('info_logger')
 
 
 def date_ranges(start_date, end_date, date_format='%Y-%m-%d'):
@@ -360,10 +366,11 @@ class ScheduleConnection:
             self.saved_schedule = temp_df
             empties_logger.info(empty_df.to_csv())
         else:
-            error_logger.error('ERROR: Empties could not be removed.')
+            info_logger.error('ERROR: Empties could not be removed.')
             raise APIError(
                 'An unexpected number of entries were removed; this indicates an issue with the saved schedule.')
         print(f'Removed {rows_to_remove} empties.')
+        info_logger.info(f'Removed {rows_to_remove} empties.')
 
     def remove_schedule_duplicates(self):
         """
@@ -385,10 +392,11 @@ class ScheduleConnection:
             self.saved_schedule = temp_df
             duplicates_logger.info(duplicates_report.to_csv(index=False))
         else:
-            error_logger.error('ERROR: Duplicates could not be removed.')
+            info_logger.error('ERROR: Duplicates could not be removed.')
             raise APIError(
                 'An unexpected number of entries were removed; this indicates an issue with the saved schedule.')
         print(f'Removed {rows_to_remove} duplicates.')
+        info_logger.info(f'Removed {rows_to_remove} duplicates.')
 
     def remove_schedule_conflicts(self):
         """
@@ -415,6 +423,7 @@ class ScheduleConnection:
             raise APIError(
                 'An unexpected number of entries were removed; this indicates an issue with the saved schedule.')
         print(f'Removed {rows_to_remove} conflicts.')
+        info_logger.info(f'Removed {rows_to_remove} conflicts.')
 
 
 class ProviderConnection:
@@ -566,4 +575,4 @@ class ProviderReport(ProviderConnection):
             columns.remove(col)
         reordered_columns.extend(columns)
         self.df = self.df[[*reordered_columns]]
-        self.df.set_index("index" if not original_index_name else original_index_name)
+        self.df = self.df.set_index("index" if not original_index_name else original_index_name)
