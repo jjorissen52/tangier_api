@@ -68,19 +68,6 @@ class TestProviderConnection(unittest.TestCase):
                         generate_empty_list_error_response(sys._getframe().f_code.co_name, 'provider_list'))
 
 
-class TestAsyncScheduleConnection(unittest.TestCase):
-    def test_async_get_schedules(self):
-        from tangier_api.async_api import AsyncScheduleConnection
-        from tangier_api.api import TESTING_SITE
-        connection = AsyncScheduleConnection()
-        today = moment.utcnow().strftime("%Y-%m-%d")
-        three_months_ago = moment.utcnow().add(months=-2).strftime("%Y-%m-%d")
-        site_ids = [TESTING_SITE*3]
-        request_list = connection.generate_request_list(three_months_ago, today, site_ids)
-        schedule_list = connection.get_schedules(request_list)
-        self.assertTrue(len(schedule_list) != 0,
-                        generate_empty_list_error_response(sys._getframe().f_code.co_name, 'schedule_list'))
-
 
 if __name__ == "__main__":
     unittest.main()
