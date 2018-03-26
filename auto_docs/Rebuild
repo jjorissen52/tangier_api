@@ -1,6 +1,6 @@
 # https://samnicholls.net/2016/06/15/how-to-sphinx-readthedocs/
-cd docs/
+# execute from auto_docs/
 rm source/*
-rm -rf _build
+rm  ../docs/
 sphinx-apidoc -o source/ ../tangier_api
-sphinx-build -b html -E . _build
+sphinx-build -b html -E . ../docs
