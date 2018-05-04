@@ -622,7 +622,7 @@ class ScheduleWithData:
             .rename(columns={'name': 'site_name', 'short_name': 'site_short_name'})
         self.temp_providers = self.providers.drop(
             columns=['@action', 'processed', 'comment', 'street', 'city', 'state', 'zip'])
-        with_sites = self.saved_schedule.merge(self.temp_locations, how='left', left_on=['location'],
+        with_sites = self.saved_schedule.merge(self.temp_locations, how='left', left_on=['siteid'],
                                                right_on=['site_id']).drop(columns=['location'])
         with_all = with_sites.merge(self.temp_providers, how='left', left_on=['providerprimarykey'],
                                     right_on=['provider_primary_key'])
