@@ -4,3 +4,8 @@ rm source/*
 rm  ../docs/
 sphinx-apidoc -o source/ ../tangier_api
 sphinx-build -b html -E . ../docs
+
+
+# if for whatever reason github pages refusing to rebuild...
+# git commit --allow-empty -m "Trigger rebuild"
+# git push

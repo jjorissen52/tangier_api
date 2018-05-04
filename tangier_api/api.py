@@ -239,7 +239,10 @@ class ScheduleConnection:
             print(str(date_range))
             schedule_values_list.extend(
                 self.get_schedule_values_list(date_range[0], date_range[1], site_ids, xml_string, **tags))
-        df = pandas.DataFrame(schedule_values_list).sort_values(['shift_start_date', 'shift_end_date']).reset_index()
+        df = pandas.DataFrame(schedule_values_list)
+        if df.empty:
+            raise APICallError('No schedule was returned in the given range.')
+        df = df.sort_values(['shift_start_date', 'shift_end_date']).reset_index()
         df = df.drop(['index'], axis=1)
         self.saved_schedule = df.copy()
         schedule_logger.info(self.saved_schedule.to_csv())
@@ -446,7 +449,7 @@ class ProviderConnection:
     def MaintainProviders(self, xml_string=""):
         return self.client.service.MaintainProviders(xml_string)
 
-    def get_provider_info(self, provider_ids=None, xml_string="", **tags):
+    def get_provider_info(self, provider_ids=None, use_primary_keys=True, all_providers=True, xml_string="", **tags):
         """
         Method to retrieve info on all providers corresponding to the list "provider_ids"
 
@@ -455,31 +458,35 @@ class ProviderConnection:
         :param tags: (kwargs) things to be injected into the request. ex: start_date="2017-05-01", end_date="2017-05-02"
         :return:
         """
-        if not provider_ids:
-            raise APICallError("a list of provider_ids must be provided.")
+        if not provider_ids and not all_providers:
+            raise APICallError("You must provide either a list of provider_ids or set all_providers=True.")
         elif not isinstance(provider_ids, list):
             provider_ids = [provider_ids]
         xml_string = xml_string if xml_string else self.base_xml
         xml_string = xmlmanip.inject_tags(xml_string, injection_index=2, providers="")
         provider_dict = {}
-        for i, provider_id in enumerate(provider_ids):
-            provider_dict[f'provider__{i}'] = {"action": "info", "__inner_tag": {"emp_id": f"{provider_id}"}}
+        id_label = "provider_primary_key" if use_primary_keys else "emp_id"
+        if not all_providers:
+            for i, provider_id in enumerate(provider_ids):
+                provider_dict[f'provider__{i}'] = {"action": "info", "__inner_tag": {id_label: f"{provider_id}"}}
+        else:
+            provider_dict[f'provider'] = {"action": "info", "__inner_tag": {id_label: "ALL"}}
         xml_string = xmlmanip.inject_tags(xml_string, parent_tag="providers", **provider_dict)
 
         # return xml_string
         return self.MaintainProviders(xml_string).encode('utf-8')
 
-    def provider_info_values_list(self, provider_ids=None):
+    def provider_info_values_list(self, **kwargs):
         """
-        Returns a Searchable List object (subclass of list) of all providers returned by get_provider_info
-
-        :param provider_ids: (list) of all emp_ids corresponding to desired provider info
-        :return: (SearchableList) of all providers returned by get_provider_info
+        Wrapper for get_provider info which converts the xml response into a list of dicts
         """
-        xml_string = self.get_provider_info(provider_ids)
+        xml_string = self.get_provider_info(**kwargs)
         schema = xmlmanip.XMLSchema(xml_string)
-        # kind of hacky way to get every element with an emp_id tag
-        provider_list = schema.search(emp_id__contains='')
+        id_label = "provider_primary_key" if 'use_primary_keys' in kwargs.keys() else "emp_id"
+        # using contains method here is kind of hacky way to get every element with an {id_label} tag, basically I'm
+        # just checking to see that the label even exists
+        label_dict = {f"{id_label}__contains": ""}
+        provider_list = schema.search(**label_dict)
         return provider_list
 
 
@@ -513,6 +520,8 @@ class LocationConnection:
         :return: xml response string with an error message or info about a location.
         """
         # sites = {"site_id": site_id for i, site_id in enumerate(site_ids)}
+        if not issubclass(site_ids.__class__, list):
+            site_ids = [site_ids]
         tags = {f"location__{i}": {"action": "info", "__inner_tag": {"site_id": site_id}} for i, site_id in enumerate(site_ids)}
         xml_string = xml_string if xml_string else self.base_xml
         xml_string = xmlmanip.inject_tags(xml_string, injection_index=2, locations="")
@@ -576,3 +585,51 @@ class ProviderReport(ProviderConnection):
         reordered_columns.extend(columns)
         self.df = self.df[[*reordered_columns]]
         self.df = self.df.set_index("index" if not original_index_name else original_index_name)
+
+
+class ScheduleWithData:
+
+    def __init__(self, schedule_connection, provider_connection, location_connection):
+        try:
+            import pandas
+        except:
+            raise ImportError(f'{self.__name__} requires pandas to be importable in your environment.')
+        if not isinstance(schedule_connection, ScheduleConnection):
+            raise APIError('schedule_connection argument (arg[0]) must be a ScheduleConnection instance.')
+        if not isinstance(provider_connection, ProviderConnection):
+            raise APIError('provider_connection argument (arg[1]) must be a ProviderConnection instance.')
+        if not isinstance(location_connection, LocationConnection):
+            raise APIError('location_connection argument (arg[0]) must be a LocationConnection instance.')
+        self.sconn = schedule_connection
+        self.pconn = provider_connection
+        self.lconn = location_connection
+
+    def _get_provider_info(self):
+        self.providers = pandas.DataFrame(self.pconn.provider_info_values_list(all_providers=True,
+                                                                               use_primary_keys=True)).fillna('')
+
+    def _get_location_info(self):
+        self.locations = pandas.DataFrame(self.lconn.location_info_values_list(site_ids='ALL_SITE_IDS')).fillna('')
+
+    def save_schedule_from_range(self, start_date, end_date):
+        self._get_provider_info()
+        self._get_location_info()
+        self.sconn.save_schedule_from_range(start_date, end_date,
+                                            site_ids=list(self.locations['site_id'].unique()),
+                                            include_provider_primary_key='true')
+        self.saved_schedule = self.sconn.saved_schedule
+        self.temp_locations = self.locations.drop(columns=['@action', 'is_scheduled']) \
+            .rename(columns={'name': 'site_name', 'short_name': 'site_short_name'})
+        self.temp_providers = self.providers.drop(
+            columns=['@action', 'processed', 'comment', 'street', 'city', 'state', 'zip'])
+        with_sites = self.saved_schedule.merge(self.temp_locations, how='left', left_on=['location'],
+                                               right_on=['site_id']).drop(columns=['location'])
+        with_all = with_sites.merge(self.temp_providers, how='left', left_on=['providerprimarykey'],
+                                    right_on=['provider_primary_key'])
+        with_all = with_all.drop(columns=['empid', 'siteid', 'providerprimarykey'])
+        self.saved_schedule = with_all.fillna('')
+
+
+
+
+
