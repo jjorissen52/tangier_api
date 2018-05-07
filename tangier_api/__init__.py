@@ -1,1 +1,1 @@
-from . api import ScheduleConnection, ProviderConnection, ProviderReport, LocationConnection, ScheduleWithData
+from . api import ScheduleConnection, ScheduleManipulation, ProviderConnection, ProviderReport, LocationConnection, ScheduleWithData

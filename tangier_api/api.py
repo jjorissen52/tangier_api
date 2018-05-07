@@ -70,7 +70,7 @@ class ScheduleConnection:
     time_format = "%I:%M %p"
 
     def __init__(self, xml_string="", site_file=None, site_id_column_header='site_id', testing=False,
-                 endpoint=SCHEDULE_ENDPOINT):
+                 endpoint=SCHEDULE_ENDPOINT, debug=False):
         """
         Initializes the ScheduleConnection. This method attempts to authenticate the connection, pulls site_ids from the site_id file, and determines WSDL definition info
 
@@ -79,7 +79,7 @@ class ScheduleConnection:
         :param site_id_column_header: (str) header name of column containing site ids in site_file
         :param endpoint: where the WSDL info is with routing info and SOAP API definitions
         """
-        super(self.__class__, self).__init__()
+
         if not xml_string:
             self.base_xml = """<tangier version="1.0" method="schedule.request"></tangier>"""
         else:
@@ -106,6 +106,7 @@ class ScheduleConnection:
         self.base_xml = xmlmanip.inject_tags(self.base_xml, user_name=TANGIER_USERNAME, user_pwd=TANGIER_PASSWORD)
         self.client = Client(endpoint, transport=Transport(session=Session()))
         self.saved_schedule = None
+        self.debug = debug
 
     def GetSchedule(self, xml_string=""):
         """
@@ -169,6 +170,8 @@ class ScheduleConnection:
         tags = {"site_id": site_id, "start_date": start_date, "end_date": end_date, **tags}
         xml_string = xmlmanip.inject_tags(xml_string, injection_index=2, schedule="")
         xml_string = xmlmanip.inject_tags(xml_string, parent_tag="schedule", **tags)
+        if self.debug:
+            self.last_request = xml_string
         return self.GetSchedule(xml_string)
 
     def get_schedules(self, start_date=None, end_date=None, site_ids=None, xml_string="", **tags):
@@ -222,6 +225,14 @@ class ScheduleConnection:
                 schedule_values_list.extend(self._extract_shifts(shifts))
         return schedule_values_list
 
+
+class ScheduleManipulation(ScheduleConnection):
+
+
+    # def __init__(self, *args, **kwargs):
+    #     super().__init__(*args, **kwargs)
+
+
     def save_schedule_from_range(self, start_date=None, end_date=None, site_ids=None, xml_string="", **tags):
         """
         Saves schedule for indicated date range and facilities to ScheduleConnection object
@@ -247,6 +258,19 @@ class ScheduleConnection:
         self.saved_schedule = df.copy()
         schedule_logger.info(self.saved_schedule.to_csv())
 
+    def get_schedule_open(self, info=False):
+        """
+        Gets DataFrame of all entries from schedule where providername == "open" in the saved_schedule
+
+        :param info: (bool) whether or not to print out progress
+        :return: (DataFrame) of all entries from schedule which were not worked (reportedminutes == 0)
+        """
+        if self.saved_schedule is None:
+            raise APICallError('There must be a saved schedule from save_schedule_from_range.')
+        df = self.saved_schedule.copy()
+        open_df = df[df['providername'] == 'open']
+        return open_df
+
     def get_schedule_empties(self, info=False):
         """
         Gets DataFrame of all entries from schedule which were not worked (reportedminutes == 0) in the saved_schedule
@@ -270,15 +294,18 @@ class ScheduleConnection:
         if self.saved_schedule is None:
             raise APICallError('There must be a saved schedule from save_schedule_from_range.')
         df = self.saved_schedule.copy()
+        if not 'provider_primary_key' in df.columns:
+            raise APICallError('get_schedule_conflicts, and get_schedule_duplicates '
+                               'rely on use of provider_primary_key=True.')
         df = df.sort_values(['shift_start_date', 'shift_end_date'])
         conflict_df = pandas.DataFrame()
-        unique_ids = list(df['empid'].dropna().unique())
+        unique_ids = list(df['provider_primary_key'].dropna().unique())
         for c, emp_id in enumerate(unique_ids):
             if (c % 13 == 12 or c == len(unique_ids) - 1) and info:
                 print(f'{(c+1)/len(unique_ids)*100:>5.2f}%')
             elif info:
                 print(f'{(c+1)/len(unique_ids)*100:>5.2f}%', end=',  ')
-            emp_sched = df.loc[df['empid'] == emp_id]
+            emp_sched = df.loc[df['provider_primary_key'] == emp_id]
             for i, row in emp_sched.iterrows():
                 for j, row2 in emp_sched.iterrows():
                     if j <= i:
@@ -290,9 +317,10 @@ class ScheduleConnection:
                         row['conflict_shift_start_date'], row['conflict_shift_end_date'] = row2['shift_start_date'], \
                                                                                            row2['shift_end_date']
                         row['conflict_index'] = j
-                        conflict_df = conflict_df.append(row[['conflict_index', 'empid', 'shift_start_date',
-                                                              'shift_end_date', 'conflict_shift_start_date',
-                                                              'conflict_shift_end_date']])
+                        conflict_df = conflict_df.append(
+                            row[['conflict_index', 'provider_primary_key', 'shift_start_date',
+                                 'shift_end_date', 'conflict_shift_start_date',
+                                 'conflict_shift_end_date']])
         if not conflict_df.empty:
             conflict_df['conflict_index'] = conflict_df['conflict_index'].astype(int)
         return conflict_df
@@ -307,14 +335,17 @@ class ScheduleConnection:
         if self.saved_schedule is None:
             raise APICallError('There must be a saved schedule from save_schedule_from_range.')
         df = self.saved_schedule.copy()
+        if not 'provider_primary_key' in df.columns:
+            raise APICallError('get_schedule_conflicts, and get_schedule_duplicates '
+                               'rely on use of provider_primary_key=True.')
         dupe_df = pandas.DataFrame()
-        unique_ids = list(df['empid'].dropna().unique())
+        unique_ids = list(df['provider_primary_key'].dropna().unique())
         for c, emp_id in enumerate(unique_ids):
             if (c % 13 == 12 or c == len(unique_ids) - 1) and info:
                 print(f'{(c+1)/len(unique_ids)*100:>5.2f}%')
             elif info:
                 print(f'{(c+1)/len(unique_ids)*100:>5.2f}%', end=',  ')
-            emp_sched = df.loc[df['empid'] == emp_id]
+            emp_sched = df.loc[df['provider_primary_key'] == emp_id]
             for i, row in emp_sched.iterrows():
                 for j, row2 in emp_sched.iterrows():
                     if j <= i:
@@ -326,9 +357,9 @@ class ScheduleConnection:
                         row['dupe_shift_start_date'], row['dupe_shift_end_date'] = row2['shift_start_date'], row2[
                             'shift_end_date']
                         row['dupe_index'] = j
-                        dupe_df = dupe_df.append(row[['dupe_index', 'empid', 'shift_start_date', 'shift_end_date',
-                                                      'dupe_shift_start_date', 'dupe_shift_end_date']])
-
+                        dupe_df = dupe_df.append(
+                            row[['dupe_index', 'provider_primary_key', 'shift_start_date', 'shift_end_date',
+                                 'dupe_shift_start_date', 'dupe_shift_end_date']])
         if not dupe_df.empty:
             dupe_df['dupe_index'] = dupe_df['dupe_index'].astype(int)
         return dupe_df
@@ -336,6 +367,8 @@ class ScheduleConnection:
     def generate_duplicates_report(self, dupes):
         dupes = dupes.reset_index()
         # dupes_left will have originals, dupes_right will have duplicates of originals
+        if not 'index' in dupes.columns or not 'dupe_index' in dupes.columns:
+            return pandas.DataFrame()
         dupes_left = self.saved_schedule.loc[dupes['index']].reset_index()
         dupes_right = self.saved_schedule.loc[dupes['dupe_index']].reset_index()
         # we append and sort on the two indices, the final result has alternating rows of orignals and duplicates
@@ -346,10 +379,36 @@ class ScheduleConnection:
     def generate_conflicts_report(self, conflicts):
         conflicts = conflicts.reset_index()
         conflicts_left = self.saved_schedule.loc[conflicts['index']].reset_index()
+        if not 'index' in conflicts.columns or not 'conflict_index' in conflicts.columns:
+            return pandas.DataFrame()
         conflicts_right = self.saved_schedule.loc[conflicts['conflict_index']].reset_index()
         conflicts_append = conflicts_left.append(conflicts_right).reset_index().sort_values(['level_0', 'index'])
         conflicts_append = conflicts_append.set_index(['level_0'])
         return conflicts_append
+
+    def remove_schedule_open(self):
+        """
+        Removes all entries from schedule which are just open shifts (providername == 'open') in the saved_schedule
+
+        :return:
+        """
+        initial_length = self.saved_schedule.shape[0]
+        open_df = self.get_schedule_open().reset_index()
+        if open_df.empty:
+            print('No open shifts to remove.')
+            empties_logger.info('No open shifts to remove.')
+            return
+        rows_to_remove = open_df.shape[0]
+        temp_df = self.saved_schedule.drop(open_df['index'])
+        if temp_df.shape[0] == initial_length - rows_to_remove:
+            self.saved_schedule = temp_df
+            empties_logger.info(open_df.to_csv())
+        else:
+            info_logger.error('ERROR: Open Shifts could not be removed.')
+            raise APIError(
+                'An unexpected number of entries were removed; this indicates an issue with the saved schedule.')
+        print(f'Removed {rows_to_remove} open shifts.')
+        info_logger.info(f'Removed {rows_to_remove} open shifts.')
 
     def remove_schedule_empties(self):
         """
@@ -628,7 +687,7 @@ class ScheduleWithData:
                                     right_on=['provider_primary_key'])
         with_all = with_all.drop(columns=['empid', 'siteid', 'providerprimarykey'])
         self.saved_schedule = with_all.fillna('')
-
+        self.sconn.saved_schedule = self.saved_schedule
 
 
 
