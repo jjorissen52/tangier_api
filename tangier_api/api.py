@@ -1,15 +1,14 @@
 import re
 import configparser, os, datetime, logging
-from functools import wraps
-import random
 
 from requests import Session
-
 from zeep import Client
 from zeep.transports import Transport
-
 import xml.etree.ElementTree as ET
-import xmlmanip, pandas, mylittlehelpers, numpy
+import xmlmanip, pandas, numpy
+
+from . exceptions import APICallError, APIError
+from . wrappers import handle_response, debug_options
 
 INTERFACE_CONF_FILE = os.environ.get('INTERFACE_CONF_FILE')
 INTERFACE_CONF_FILE = os.path.join(INTERFACE_CONF_FILE) if INTERFACE_CONF_FILE else 'tangier.conf'
@@ -32,18 +31,6 @@ LOG_DIR_INSERT = f'{now.strftime("%Y-%m-%d")}-{int(now.timestamp())}'
 # EMPTIES_LOG_FILE = os.path.join(LOG_DIR, LOG_DIR_INSERT, f'empties_log.txt'.upper())
 # CONFLICTS_LOG_FILE = os.path.join(LOG_DIR, LOG_DIR_INSERT, f'conflicts_log.txt'.upper())
 # INFO_LOG_FILE = os.path.join(LOG_DIR, LOG_DIR_INSERT, f'info_log.txt'.upper())
-
-class APICallError(BaseException):
-    pass
-
-class APIError(BaseException):
-    pass
-
-# schedule_logger = mylittlehelpers.setup_logger('schedule_logger', SCHEDULE_LOG_FILE)
-# duplicates_logger = mylittlehelpers.setup_logger('duplicates_logger', DUPE_LOG_FILE)
-# empties_logger = mylittlehelpers.setup_logger('empties_logger', EMPTIES_LOG_FILE)
-# conflicts_logger = mylittlehelpers.setup_logger('conflicts_logger', CONFLICTS_LOG_FILE)
-# info_logger = mylittlehelpers.setup_logger('info_logger', INFO_LOG_FILE)
 
 schedule_logger = logging.getLogger('schedule_logger')
 duplicates_logger = logging.getLogger('duplicates_logger')
@@ -502,7 +489,7 @@ class ProviderConnection:
         else:
             self.base_xml = xml_string
         self.base_xml = xmlmanip.inject_tags(self.base_xml, admin_user=TANGIER_USERNAME,
-                                                   admin_pwd=TANGIER_PASSWORD)
+                                             admin_pwd=TANGIER_PASSWORD)
         self.client = Client(endpoint, transport=Transport(session=Session()))
 
     def MaintainProviders(self, xml_string=""):
@@ -513,6 +500,8 @@ class ProviderConnection:
         Method to retrieve info on all providers corresponding to the list "provider_ids"
 
         :param provider_ids: (list) of all emp_ids corresponding to desired provider info
+        :param use_primary_keys: (bool) indicates whether provider_ids should be treated as emp_id or provider_primary_key
+        :param all_providers: (bool) indicates whether to return data on all existing providers
         :param xml_string: (xml string) overrides default xml string provided by the instantiation of the class object
         :param tags: (kwargs) things to be injected into the request. ex: start_date="2017-05-01", end_date="2017-05-02"
         :return:
@@ -541,7 +530,10 @@ class ProviderConnection:
         """
         xml_string = self.get_provider_info(**kwargs)
         schema = xmlmanip.XMLSchema(xml_string)
-        id_label = "provider_primary_key" if 'use_primary_keys' in kwargs.keys() else "emp_id"
+        if kwargs.get('all_providers'):
+            id_label = 'provider_primary_key'
+        else:
+            id_label = "provider_primary_key" if kwargs.get('use_primary_keys') else "emp_id"
         # using contains method here is kind of hacky way to get every element with an {id_label} tag, basically I'm
         # just checking to see that the label even exists
         label_dict = {f"{id_label}__contains": ""}
@@ -550,7 +542,7 @@ class ProviderConnection:
 
 
 class LocationConnection:
-    def __init__(self, xml_string="", endpoint=LOCATION_ENDPOINT):
+    def __init__(self, xml_string="", endpoint=LOCATION_ENDPOINT, show_xml_request=False, show_xml_response=False):
         """
 
         :param xml_string: override the default xml, which is just <tangier method="schedule.request"/>
@@ -561,10 +553,15 @@ class LocationConnection:
             self.base_xml = """<tangier version="1.0" method="location.request"></tangier>"""
         else:
             self.base_xml = xml_string
+        # these two are used with @debug_options
+        self.show_xml_request = show_xml_request
+        self.show_xml_response = show_xml_response
         self.base_xml = xmlmanip.inject_tags(self.base_xml, admin_user=TANGIER_USERNAME, admin_pwd=TANGIER_PASSWORD)
         self.client = Client(endpoint, transport=Transport(session=Session()))
 
-    def MaintainLocations(self, xml_string=""):
+    @handle_response
+    @debug_options
+    def MaintainLocations(self, xml_string):
         """
         WSDL GetLocation method
 
@@ -581,7 +578,8 @@ class LocationConnection:
         # sites = {"site_id": site_id for i, site_id in enumerate(site_ids)}
         if not issubclass(site_ids.__class__, list):
             site_ids = [site_ids]
-        tags = {f"location__{i}": {"action": "info", "__inner_tag": {"site_id": site_id}} for i, site_id in enumerate(site_ids)}
+        tags = {f"location__{i}": {"action": "info", "__inner_tag": {"site_id": site_id}} for i, site_id in
+                enumerate(site_ids)}
         xml_string = xml_string if xml_string else self.base_xml
         xml_string = xmlmanip.inject_tags(xml_string, injection_index=2, locations="")
         xml_string = xmlmanip.inject_tags(xml_string, parent_tag="locations", **tags)
@@ -598,6 +596,61 @@ class LocationConnection:
         # kind of hacky way to get every element with a site_id tag
         location_list = schema.search(site_id__contains='')
         return location_list
+
+    def add_location(self, site_id=None, xml_string=None, name=None, short_name=None, **kwargs):
+        """
+
+        :param site_id: (str) id of site to be added
+        :param xml_string: (xml string) overrides the default credential and/or location injection into base_xml
+        :param kwargs: additional named properties to be provided in the creation request.
+        :return: xml response string with an error message or info about a location.
+        """
+        if not (site_id and name and short_name):
+            raise APICallError(f'site_id, name, and short_name are all required key-word arguments.')
+        tags = {f"location": {"action": "add", "__inner_tag": {"site_id": site_id,
+                                                               "name": name, 'short_name': short_name, **kwargs}}}
+        xml_string = xml_string if xml_string else self.base_xml
+        xml_string = xmlmanip.inject_tags(xml_string, injection_index=2, locations="")
+        xml_string = xmlmanip.inject_tags(xml_string, parent_tag="locations", **tags)
+        return self.MaintainLocations(xml_string).encode('utf-8')
+
+    def update_location(self, site_id=None, new_site_id=None, xml_string=None, name=None, short_name=None, **kwargs):
+        """
+
+        :param site_id: (str) id of site to be added
+        :param new_site_id: (str) id of site to be renamed, if desired
+        :param xml_string: (xml string) overrides the default credential and/or location injection into base_xml
+        :param kwargs: additional named properties to be provided in the creation request.
+        :return: xml response string with an error message or info about a location.
+        """
+        if not (site_id and name and short_name):
+            raise APICallError(f'site_id, name, and short_name are all required key-word arguments.')
+        if new_site_id:
+            tags = {f"location": {"action": "update",
+                                  "__inner_tag": {"site_id": site_id, 'new_site_id': new_site_id,
+                                                  "name": name, 'short_name': short_name, **kwargs}}}
+        else:
+            tags = {f"location": {"action": "update", "__inner_tag": {"site_id": site_id, "name": name,
+                                                                      'short_name': short_name, **kwargs}}}
+        xml_string = xml_string if xml_string else self.base_xml
+        xml_string = xmlmanip.inject_tags(xml_string, injection_index=2, locations="")
+        xml_string = xmlmanip.inject_tags(xml_string, parent_tag="locations", **tags)
+        return self.MaintainLocations(xml_string).encode('utf-8')
+
+    def delete_location(self, site_id=None, xml_string=None):
+        """
+
+        :param site_id: (str) id of site to be deleted
+        :param xml_string: (xml string) overrides the default credential and/or location injection into base_xml
+        :return: xml response string with an error message or info about a location.
+        """
+        if not site_id:
+            raise APICallError(f'site_id cannot be {site_id}')
+        tags = {f"location": {"action": "delete", "__inner_tag": {"site_id": site_id}}}
+        xml_string = xml_string if xml_string else self.base_xml
+        xml_string = xmlmanip.inject_tags(xml_string, injection_index=2, locations="")
+        xml_string = xmlmanip.inject_tags(xml_string, parent_tag="locations", **tags)
+        return self.MaintainLocations(xml_string).encode('utf-8')
 
 
 class ProviderReport(ProviderConnection):
