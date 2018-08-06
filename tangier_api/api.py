@@ -140,7 +140,7 @@ class ScheduleConnection:
     def _time_and_date_to_iso(time, date, time_format=time_format, date_format=date_format):
         return datetime.datetime.strptime(f'{time} {date}', f'{time_format} {date_format}').isoformat()
 
-    def get_schedule(self, start_date=None, end_date=None, site_id=None, xml_string="", **tags):
+    def get_schedule(self, start_date=None, end_date=None, site_id=None, emp_id=None, xml_string="", **tags):
         """
         Wrapper for the GetSchedule method which facilitates adding necessary tags to the default xml string. Pulls schedule for one site for a given date range.
 
@@ -151,12 +151,17 @@ class ScheduleConnection:
         :param tags: (kwargs) things to be injected into the request.
         :return: xml response string with an error message or a schedule.
         """
-        if not start_date and end_date and site_id:
-            raise APICallError('kwargs start_date, end_date, and site_id are all required.')
+        if not start_date and end_date and (site_id or emp_id):
+            raise APICallError('kwargs start_date, end_date, and (site_id or emp_id) are all required.')
         xml_string = xml_string if xml_string else self.base_xml
-        tags = {"site_id": site_id, "start_date": start_date, "end_date": end_date, **tags}
+        base_tags = {}
+        if site_id:
+            base_tags.update({"site_id": site_id})
+        if emp_id:
+            base_tags.update({"emp_id": str(emp_id)})
+        base_tags.update({"start_date": start_date, "end_date": end_date, **tags})
         xml_string = xmlmanip.inject_tags(xml_string, injection_index=2, schedule="")
-        xml_string = xmlmanip.inject_tags(xml_string, parent_tag="schedule", **tags)
+        xml_string = xmlmanip.inject_tags(xml_string, parent_tag="schedule", **base_tags)
         if self.debug:
             self.last_request = xml_string
         return self.GetSchedule(xml_string)
@@ -184,29 +189,33 @@ class ScheduleConnection:
                                                end_date=end_date, xml_string=xml_string))
         return schedules
 
-    def get_schedule_values_list(self, start_date=None, end_date=None, site_ids=None, xml_string="", **tags):
+    def get_schedule_values_list(self, start_date=None, end_date=None, site_ids=None, emp_ids=None, xml_string="", **tags):
         """
         Wrapper for the get_schedules function that returns the retrieved schedules as a list of dicts. This can easily be converted into a DataFrame
 
         :param start_date: (str) %Y-%m-%d date string indicating the beginning of the range from which to pull the schedule
         :param end_date: (str) %Y-%m-%d date string indicating the ending of the range from which to pull the schedule
         :param site_ids: (list or None) list of ids corresponding to the site(s) that the schedule will be pulled from, defaults to the list pulled from site_file in the __init__ function
+        :param emp_ids: (list or None) list of emp_ids corresponding to the employee(s) that the schedule will be pulled for
         :param xml_string: (xml string) overrides the default credential and/or schedule injection into base_xml
         :param tags: (kwargs) things to be injected into the request.
         :return: (OrderedDict) filled with schedules.
         """
-        if not site_ids and not self.site_ids:
-            raise APICallError("kwarg site_ids is required.")
-        elif not site_ids:
+        if not site_ids and not hasattr(self, 'site_ids') and not emp_ids:
+            raise APICallError("kwarg site_ids or emp_ids is required.")
+        elif (site_ids or hasattr(self, 'site_ids')) and emp_ids:
+            raise APICallError("schedule queries on both site_ids and emp_ids is currently not supported.")
+        elif not site_ids and not emp_ids:
             site_ids = self.site_ids
-        elif not issubclass(site_ids.__class__, list):
-            site_ids = [site_ids]
+        id_type = 'site_id' if site_ids else 'emp_id'
+        id_list = site_ids if site_ids else emp_ids
+        id_list = id_list if issubclass(id_list.__class__, list) else [id_list]
         xml_string = xml_string if xml_string else self.base_xml
         schedule_values_list = []
-
-        for site_id in site_ids:
+        for _id in id_list:
+            id_kwargs = {id_type: _id}
             schedule_response = self.get_schedule(xml_string=xml_string, start_date=start_date, end_date=end_date,
-                                                  site_id=site_id, **tags)
+                                                  **id_kwargs, **tags)
             temp_values_list = xmlmanip.XMLSchema(schedule_response).search('@shiftdate', "", comparison='ne')
             for shifts in temp_values_list:
                 schedule_values_list.extend(self._extract_shifts(shifts))
