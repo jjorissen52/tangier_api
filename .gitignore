@@ -106,5 +106,5 @@ notebooks/
 !/notebooks/AllToCSV.ipynb
 good_responses
 /tangier_api.egg-info/
-/dist/
+dist/
 /.ipynb_checkpoints/
