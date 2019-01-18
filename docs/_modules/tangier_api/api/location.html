@@ -1,0 +1,344 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>tangier_api.api.location &mdash; tangier_api  documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../../../genindex.html"/>
+        <link rel="search" title="Search" href="../../../search.html"/>
+    <link rel="top" title="tangier_api  documentation" href="../../../index.html"/>
+        <link rel="up" title="Module code" href="../../index.html"/> 
+
+  
+  <script src="../../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home"> tangier_api
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../readme.html">Description</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../readme.html#overview">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../readme.html#installation">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../readme.html#setup">Setup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../readme.html#usage">Usage</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">tangier_api</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+        
+      <li>tangier_api.api.location</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for tangier_api.api.location</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">zeep</span>
+<span class="kn">import</span> <span class="nn">requests</span>
+<span class="kn">import</span> <span class="nn">xmlmanip</span>
+
+<span class="kn">from</span> <span class="nn">tangier_api</span> <span class="k">import</span> <span class="n">settings</span>
+<span class="kn">from</span> <span class="nn">tangier_api</span> <span class="k">import</span> <span class="n">exceptions</span>
+<span class="kn">from</span> <span class="nn">tangier_api</span> <span class="k">import</span> <span class="n">wrappers</span>
+
+
+<div class="viewcode-block" id="LocationConnection"><a class="viewcode-back" href="../../../source/tangier_api.api.html#tangier_api.api.location.LocationConnection">[docs]</a><span class="k">class</span> <span class="nc">LocationConnection</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">xml_string</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">endpoint</span><span class="o">=</span><span class="n">settings</span><span class="o">.</span><span class="n">LOCATION_ENDPOINT</span><span class="p">,</span> <span class="n">show_xml_request</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">show_xml_response</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">        :param xml_string: override the default xml, which is just &lt;tangier method=&quot;schedule.request&quot;/&gt;</span>
+<span class="sd">        :param endpoint: where the WSDL info is with routing info and SOAP API definitions</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">xml_string</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">base_xml</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;&lt;tangier version=&quot;1.0&quot; method=&quot;location.request&quot;&gt;&lt;/tangier&gt;&quot;&quot;&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">base_xml</span> <span class="o">=</span> <span class="n">xml_string</span>
+        <span class="c1"># these two are used with @debug_options</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">show_xml_request</span> <span class="o">=</span> <span class="n">show_xml_request</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">show_xml_response</span> <span class="o">=</span> <span class="n">show_xml_response</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">base_xml</span> <span class="o">=</span> <span class="n">xmlmanip</span><span class="o">.</span><span class="n">inject_tags</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">base_xml</span><span class="p">,</span> <span class="n">admin_user</span><span class="o">=</span><span class="n">settings</span><span class="o">.</span><span class="n">TANGIER_USERNAME</span><span class="p">,</span> <span class="n">admin_pwd</span><span class="o">=</span><span class="n">settings</span><span class="o">.</span><span class="n">TANGIER_PASSWORD</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">client</span> <span class="o">=</span> <span class="n">zeep</span><span class="o">.</span><span class="n">Client</span><span class="p">(</span><span class="n">endpoint</span><span class="p">,</span> <span class="n">transport</span><span class="o">=</span><span class="n">zeep</span><span class="o">.</span><span class="n">transports</span><span class="o">.</span><span class="n">Transport</span><span class="p">(</span><span class="n">session</span><span class="o">=</span><span class="n">requests</span><span class="o">.</span><span class="n">Session</span><span class="p">()))</span>
+
+<div class="viewcode-block" id="LocationConnection.MaintainLocations"><a class="viewcode-back" href="../../../source/tangier_api.api.html#tangier_api.api.location.LocationConnection.MaintainLocations">[docs]</a>    <span class="nd">@wrappers</span><span class="o">.</span><span class="n">handle_response</span>
+    <span class="nd">@wrappers</span><span class="o">.</span><span class="n">debug_options</span>
+    <span class="k">def</span> <span class="nf">MaintainLocations</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">xml_string</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        WSDL GetLocation method</span>
+
+<span class="sd">        :param xml_string: (xml str) fully formed xml string for GetLocation request</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">service</span><span class="o">.</span><span class="n">MaintainLocations</span><span class="p">(</span><span class="n">xml_string</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="LocationConnection.get_locations_info"><a class="viewcode-back" href="../../../source/tangier_api.api.html#tangier_api.api.location.LocationConnection.get_locations_info">[docs]</a>    <span class="k">def</span> <span class="nf">get_locations_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">site_ids</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">xml_string</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param xml_string: (xml string) overrides the default credential and/or location injection into base_xml</span>
+<span class="sd">        :return: xml response string with an error message or info about a location.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># sites = {&quot;site_id&quot;: site_id for i, site_id in enumerate(site_ids)}</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">site_ids</span><span class="p">:</span>
+            <span class="n">site_ids</span> <span class="o">=</span> <span class="s1">&#39;ALL_SITE_IDS&#39;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">issubclass</span><span class="p">(</span><span class="n">site_ids</span><span class="o">.</span><span class="vm">__class__</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+            <span class="n">site_ids</span> <span class="o">=</span> <span class="p">[</span><span class="n">site_ids</span><span class="p">]</span>
+        <span class="n">tags</span> <span class="o">=</span> <span class="p">{</span><span class="n">f</span><span class="s2">&quot;location__</span><span class="si">{i}</span><span class="s2">&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;action&quot;</span><span class="p">:</span> <span class="s2">&quot;info&quot;</span><span class="p">,</span> <span class="s2">&quot;__inner_tag&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;site_id&quot;</span><span class="p">:</span> <span class="n">site_id</span><span class="p">}}</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">site_id</span> <span class="ow">in</span>
+                <span class="nb">enumerate</span><span class="p">(</span><span class="n">site_ids</span><span class="p">)}</span>
+        <span class="n">xml_string</span> <span class="o">=</span> <span class="n">xml_string</span> <span class="k">if</span> <span class="n">xml_string</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">base_xml</span>
+        <span class="n">xml_string</span> <span class="o">=</span> <span class="n">xmlmanip</span><span class="o">.</span><span class="n">inject_tags</span><span class="p">(</span><span class="n">xml_string</span><span class="p">,</span> <span class="n">injection_index</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">locations</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+        <span class="n">xml_string</span> <span class="o">=</span> <span class="n">xmlmanip</span><span class="o">.</span><span class="n">inject_tags</span><span class="p">(</span><span class="n">xml_string</span><span class="p">,</span> <span class="n">parent_tag</span><span class="o">=</span><span class="s2">&quot;locations&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">tags</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">MaintainLocations</span><span class="p">(</span><span class="n">xml_string</span><span class="p">)</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="LocationConnection.location_info_values_list"><a class="viewcode-back" href="../../../source/tangier_api.api.html#tangier_api.api.location.LocationConnection.location_info_values_list">[docs]</a>    <span class="k">def</span> <span class="nf">location_info_values_list</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">site_ids</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns a Searchable List object (subclass of list) of all locations returned by get_locations_info</span>
+<span class="sd">        :param provider_ids: (list) of all emp_ids corresponding to desired locations info</span>
+<span class="sd">        :return: (SearchableList) of all locations returned by get_locations_info</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">xml_string</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_locations_info</span><span class="p">(</span><span class="n">site_ids</span><span class="p">)</span>
+        <span class="n">schema</span> <span class="o">=</span> <span class="n">xmlmanip</span><span class="o">.</span><span class="n">XMLSchema</span><span class="p">(</span><span class="n">xml_string</span><span class="p">)</span>
+        <span class="c1"># kind of hacky way to get every element with a site_id tag</span>
+        <span class="n">location_list</span> <span class="o">=</span> <span class="n">schema</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">site_id__contains</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">location_list</span></div>
+
+<div class="viewcode-block" id="LocationConnection.add_location"><a class="viewcode-back" href="../../../source/tangier_api.api.html#tangier_api.api.location.LocationConnection.add_location">[docs]</a>    <span class="k">def</span> <span class="nf">add_location</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">site_id</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">xml_string</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">short_name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">        :param site_id: (str) id of site to be added</span>
+<span class="sd">        :param xml_string: (xml string) overrides the default credential and/or location injection into base_xml</span>
+<span class="sd">        :param kwargs: additional named properties to be provided in the creation request.</span>
+<span class="sd">        :return: xml response string with an error message or info about a location.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">site_id</span> <span class="ow">and</span> <span class="n">name</span> <span class="ow">and</span> <span class="n">short_name</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="n">exceptions</span><span class="o">.</span><span class="n">APICallError</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;site_id, name, and short_name are all required key-word arguments.&#39;</span><span class="p">)</span>
+        <span class="n">tags</span> <span class="o">=</span> <span class="p">{</span><span class="n">f</span><span class="s2">&quot;location&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;action&quot;</span><span class="p">:</span> <span class="s2">&quot;add&quot;</span><span class="p">,</span> <span class="s2">&quot;__inner_tag&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;site_id&quot;</span><span class="p">:</span> <span class="n">site_id</span><span class="p">,</span>
+                                                               <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="n">name</span><span class="p">,</span> <span class="s1">&#39;short_name&#39;</span><span class="p">:</span> <span class="n">short_name</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">}}}</span>
+        <span class="n">xml_string</span> <span class="o">=</span> <span class="n">xml_string</span> <span class="k">if</span> <span class="n">xml_string</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">base_xml</span>
+        <span class="n">xml_string</span> <span class="o">=</span> <span class="n">xmlmanip</span><span class="o">.</span><span class="n">inject_tags</span><span class="p">(</span><span class="n">xml_string</span><span class="p">,</span> <span class="n">injection_index</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">locations</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+        <span class="n">xml_string</span> <span class="o">=</span> <span class="n">xmlmanip</span><span class="o">.</span><span class="n">inject_tags</span><span class="p">(</span><span class="n">xml_string</span><span class="p">,</span> <span class="n">parent_tag</span><span class="o">=</span><span class="s2">&quot;locations&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">tags</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">MaintainLocations</span><span class="p">(</span><span class="n">xml_string</span><span class="p">)</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="LocationConnection.update_location"><a class="viewcode-back" href="../../../source/tangier_api.api.html#tangier_api.api.location.LocationConnection.update_location">[docs]</a>    <span class="k">def</span> <span class="nf">update_location</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">site_id</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">new_site_id</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">xml_string</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">short_name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">        :param site_id: (str) id of site to be added</span>
+<span class="sd">        :param new_site_id: (str) id of site to be renamed, if desired</span>
+<span class="sd">        :param xml_string: (xml string) overrides the default credential and/or location injection into base_xml</span>
+<span class="sd">        :param kwargs: additional named properties to be provided in the creation request.</span>
+<span class="sd">        :return: xml response string with an error message or info about a location.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">site_id</span> <span class="ow">and</span> <span class="n">name</span> <span class="ow">and</span> <span class="n">short_name</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="n">exceptions</span><span class="o">.</span><span class="n">APICallError</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;site_id, name, and short_name are all required key-word arguments.&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">new_site_id</span><span class="p">:</span>
+            <span class="n">tags</span> <span class="o">=</span> <span class="p">{</span><span class="n">f</span><span class="s2">&quot;location&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;action&quot;</span><span class="p">:</span> <span class="s2">&quot;update&quot;</span><span class="p">,</span>
+                                  <span class="s2">&quot;__inner_tag&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;site_id&quot;</span><span class="p">:</span> <span class="n">site_id</span><span class="p">,</span> <span class="s1">&#39;new_site_id&#39;</span><span class="p">:</span> <span class="n">new_site_id</span><span class="p">,</span>
+                                                  <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="n">name</span><span class="p">,</span> <span class="s1">&#39;short_name&#39;</span><span class="p">:</span> <span class="n">short_name</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">}}}</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">tags</span> <span class="o">=</span> <span class="p">{</span><span class="n">f</span><span class="s2">&quot;location&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;action&quot;</span><span class="p">:</span> <span class="s2">&quot;update&quot;</span><span class="p">,</span> <span class="s2">&quot;__inner_tag&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;site_id&quot;</span><span class="p">:</span> <span class="n">site_id</span><span class="p">,</span> <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="n">name</span><span class="p">,</span>
+                                                                      <span class="s1">&#39;short_name&#39;</span><span class="p">:</span> <span class="n">short_name</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">}}}</span>
+        <span class="n">xml_string</span> <span class="o">=</span> <span class="n">xml_string</span> <span class="k">if</span> <span class="n">xml_string</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">base_xml</span>
+        <span class="n">xml_string</span> <span class="o">=</span> <span class="n">xmlmanip</span><span class="o">.</span><span class="n">inject_tags</span><span class="p">(</span><span class="n">xml_string</span><span class="p">,</span> <span class="n">injection_index</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">locations</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+        <span class="n">xml_string</span> <span class="o">=</span> <span class="n">xmlmanip</span><span class="o">.</span><span class="n">inject_tags</span><span class="p">(</span><span class="n">xml_string</span><span class="p">,</span> <span class="n">parent_tag</span><span class="o">=</span><span class="s2">&quot;locations&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">tags</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">MaintainLocations</span><span class="p">(</span><span class="n">xml_string</span><span class="p">)</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="LocationConnection.delete_location"><a class="viewcode-back" href="../../../source/tangier_api.api.html#tangier_api.api.location.LocationConnection.delete_location">[docs]</a>    <span class="k">def</span> <span class="nf">delete_location</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">site_id</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">xml_string</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">        :param site_id: (str) id of site to be deleted</span>
+<span class="sd">        :param xml_string: (xml string) overrides the default credential and/or location injection into base_xml</span>
+<span class="sd">        :return: xml response string with an error message or info about a location.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">site_id</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">exceptions</span><span class="o">.</span><span class="n">APICallError</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;site_id cannot be </span><span class="si">{site_id}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="n">tags</span> <span class="o">=</span> <span class="p">{</span><span class="n">f</span><span class="s2">&quot;location&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;action&quot;</span><span class="p">:</span> <span class="s2">&quot;delete&quot;</span><span class="p">,</span> <span class="s2">&quot;__inner_tag&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;site_id&quot;</span><span class="p">:</span> <span class="n">site_id</span><span class="p">}}}</span>
+        <span class="n">xml_string</span> <span class="o">=</span> <span class="n">xml_string</span> <span class="k">if</span> <span class="n">xml_string</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">base_xml</span>
+        <span class="n">xml_string</span> <span class="o">=</span> <span class="n">xmlmanip</span><span class="o">.</span><span class="n">inject_tags</span><span class="p">(</span><span class="n">xml_string</span><span class="p">,</span> <span class="n">injection_index</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">locations</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+        <span class="n">xml_string</span> <span class="o">=</span> <span class="n">xmlmanip</span><span class="o">.</span><span class="n">inject_tags</span><span class="p">(</span><span class="n">xml_string</span><span class="p">,</span> <span class="n">parent_tag</span><span class="o">=</span><span class="s2">&quot;locations&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">tags</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">MaintainLocations</span><span class="p">(</span><span class="n">xml_string</span><span class="p">)</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span></div></div>
+</pre></div>
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, JP.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../../',
+            VERSION:'',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../../_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

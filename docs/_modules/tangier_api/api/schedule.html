@@ -1,0 +1,406 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>tangier_api.api.schedule &mdash; tangier_api  documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../../../genindex.html"/>
+        <link rel="search" title="Search" href="../../../search.html"/>
+    <link rel="top" title="tangier_api  documentation" href="../../../index.html"/>
+        <link rel="up" title="Module code" href="../../index.html"/> 
+
+  
+  <script src="../../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home"> tangier_api
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../readme.html">Description</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../readme.html#overview">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../readme.html#installation">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../readme.html#setup">Setup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../readme.html#usage">Usage</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">tangier_api</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+        
+      <li>tangier_api.api.schedule</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for tangier_api.api.schedule</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">datetime</span>
+<span class="kn">import</span> <span class="nn">pandas</span>
+<span class="kn">import</span> <span class="nn">numpy</span>
+<span class="kn">import</span> <span class="nn">xmlmanip</span>
+
+<span class="kn">from</span> <span class="nn">zeep</span> <span class="k">import</span> <span class="n">Client</span>
+<span class="kn">from</span> <span class="nn">zeep.transports</span> <span class="k">import</span> <span class="n">Transport</span>
+<span class="kn">from</span> <span class="nn">requests</span> <span class="k">import</span> <span class="n">Session</span>
+
+<span class="kn">from</span> <span class="nn">tangier_api</span> <span class="k">import</span> <span class="n">settings</span>
+<span class="kn">from</span> <span class="nn">tangier_api.exceptions</span> <span class="k">import</span> <span class="n">APICallError</span>
+
+
+<div class="viewcode-block" id="ScheduleConnection"><a class="viewcode-back" href="../../../source/tangier_api.api.html#tangier_api.api.schedule.ScheduleConnection">[docs]</a><span class="k">class</span> <span class="nc">ScheduleConnection</span><span class="p">:</span>
+    <span class="n">in_date_format</span> <span class="o">=</span> <span class="s2">&quot;%m/</span><span class="si">%d</span><span class="s2">/%Y&quot;</span>
+    <span class="n">datetime_format</span> <span class="o">=</span> <span class="s2">&quot;%Y-%m-</span><span class="si">%d</span><span class="s2">T%H:%M:%S&quot;</span>
+    <span class="n">date_format</span> <span class="o">=</span> <span class="s2">&quot;%Y-%m-</span><span class="si">%d</span><span class="s2">&quot;</span>
+    <span class="n">time_format</span> <span class="o">=</span> <span class="s2">&quot;%I:%M %p&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">xml_string</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">site_file</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">site_id_column_header</span><span class="o">=</span><span class="s1">&#39;site_id&#39;</span><span class="p">,</span> <span class="n">testing</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                 <span class="n">endpoint</span><span class="o">=</span><span class="n">settings</span><span class="o">.</span><span class="n">SCHEDULE_ENDPOINT</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initializes the ScheduleConnection. This method attempts to authenticate the connection, pulls site_ids from the site_id file, and determines WSDL definition info</span>
+
+<span class="sd">        :param xml_string: override the default xml, which is just &lt;tangier method=&quot;schedule.request&quot;/&gt;</span>
+<span class="sd">        :param site_file: (str) fully qualified path to xlsx or csv document containing all tangier site ids</span>
+<span class="sd">        :param site_id_column_header: (str) header name of column containing site ids in site_file</span>
+<span class="sd">        :param endpoint: where the WSDL info is with routing info and SOAP API definitions</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">xml_string</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">base_xml</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;&lt;tangier version=&quot;1.0&quot; method=&quot;schedule.request&quot;&gt;&lt;/tangier&gt;&quot;&quot;&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">base_xml</span> <span class="o">=</span> <span class="n">xml_string</span>
+        <span class="k">if</span> <span class="n">site_file</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">site_file</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;.xlsx&#39;</span><span class="p">):</span>
+                <span class="n">df</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">read_excel</span><span class="p">(</span><span class="n">site_file</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">site_file</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;.csv&#39;</span><span class="p">):</span>
+                <span class="n">df</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">site_file</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">df</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Did not read site file; must be a csv or xlsx document.&#39;</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">df</span><span class="o">.</span><span class="n">empty</span> <span class="ow">and</span> <span class="n">site_id_column_header</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">testing</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">site_ids</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">site_id_column_header</span><span class="p">],</span> <span class="mi">20</span><span class="p">,</span> <span class="n">replace</span><span class="o">=</span><span class="kc">False</span><span class="p">))</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">site_ids</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">site_id_column_header</span><span class="p">])</span>
+            <span class="k">elif</span> <span class="n">df</span><span class="o">.</span><span class="n">emtpy</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">site_ids</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Site ids must be in a column with the header &quot;</span><span class="si">{0}</span><span class="s1">&quot;&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">site_id_column_header</span><span class="p">))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">base_xml</span> <span class="o">=</span> <span class="n">xmlmanip</span><span class="o">.</span><span class="n">inject_tags</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">base_xml</span><span class="p">,</span> <span class="n">user_name</span><span class="o">=</span><span class="n">settings</span><span class="o">.</span><span class="n">TANGIER_USERNAME</span><span class="p">,</span> <span class="n">user_pwd</span><span class="o">=</span><span class="n">settings</span><span class="o">.</span><span class="n">TANGIER_PASSWORD</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">client</span> <span class="o">=</span> <span class="n">Client</span><span class="p">(</span><span class="n">endpoint</span><span class="p">,</span> <span class="n">transport</span><span class="o">=</span><span class="n">Transport</span><span class="p">(</span><span class="n">session</span><span class="o">=</span><span class="n">Session</span><span class="p">()))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">saved_schedule</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">debug</span> <span class="o">=</span> <span class="n">debug</span>
+
+<div class="viewcode-block" id="ScheduleConnection.GetSchedule"><a class="viewcode-back" href="../../../source/tangier_api.api.html#tangier_api.api.schedule.ScheduleConnection.GetSchedule">[docs]</a>    <span class="k">def</span> <span class="nf">GetSchedule</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">xml_string</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        WSDL GetSchedule method</span>
+
+<span class="sd">        :param xml_string: (xml str) fully formed xml string for GetSchedule request</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">service</span><span class="o">.</span><span class="n">GetSchedule</span><span class="p">(</span><span class="n">xml_string</span><span class="p">)</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">_extract_shifts</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">shifts</span><span class="p">,</span> <span class="n">in_date_format</span><span class="o">=</span><span class="n">in_date_format</span><span class="p">,</span> <span class="n">out_date_format</span><span class="o">=</span><span class="n">date_format</span><span class="p">):</span>
+        <span class="n">shifts_date_str</span> <span class="o">=</span> <span class="n">shifts</span><span class="p">[</span><span class="s2">&quot;@shiftdate&quot;</span><span class="p">]</span>
+        <span class="n">shifts_date_in</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">strptime</span><span class="p">(</span><span class="n">shifts_date_str</span><span class="p">,</span> <span class="n">in_date_format</span><span class="p">)</span>
+        <span class="n">shifts_date</span> <span class="o">=</span> <span class="n">shifts_date_in</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="n">out_date_format</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">issubclass</span><span class="p">(</span><span class="n">shifts</span><span class="p">[</span><span class="s1">&#39;shifts&#39;</span><span class="p">][</span><span class="s1">&#39;shift&#39;</span><span class="p">]</span><span class="o">.</span><span class="vm">__class__</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+            <span class="n">shifts_list</span> <span class="o">=</span> <span class="n">shifts</span><span class="p">[</span><span class="s1">&#39;shifts&#39;</span><span class="p">][</span><span class="s1">&#39;shift&#39;</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">shifts_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">shifts</span><span class="p">[</span><span class="s1">&#39;shifts&#39;</span><span class="p">][</span><span class="s1">&#39;shift&#39;</span><span class="p">]]</span>
+
+        <span class="k">def</span> <span class="nf">to_iso</span><span class="p">(</span><span class="n">shift_time</span><span class="p">,</span> <span class="n">shifts_date</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">ScheduleConnection</span><span class="o">.</span><span class="n">_time_and_date_to_iso</span><span class="p">(</span><span class="n">shift_time</span><span class="p">,</span> <span class="n">shifts_date</span><span class="p">)</span>
+
+        <span class="n">shifts_with_start_dates</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;shift_start_date&quot;</span><span class="p">:</span> <span class="n">to_iso</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="s1">&#39;actualstarttime&#39;</span><span class="p">],</span>
+                                                                                 <span class="n">shifts_date</span><span class="p">),</span>
+                                                      <span class="o">**</span><span class="n">x</span><span class="p">},</span>
+                                           <span class="n">shifts_list</span><span class="p">))</span>
+
+        <span class="k">def</span> <span class="nf">add_end_date</span><span class="p">(</span><span class="n">shift</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">ScheduleConnection</span><span class="o">.</span><span class="n">_add_end_date</span><span class="p">(</span><span class="s1">&#39;shift_start_date&#39;</span><span class="p">,</span> <span class="s1">&#39;reportedminutes&#39;</span><span class="p">,</span> <span class="n">shift</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">add_end_date</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="n">shifts_with_start_dates</span><span class="p">))</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_add_end_date</span><span class="p">(</span><span class="n">start_datetime_key</span><span class="p">,</span> <span class="n">duration_key</span><span class="p">,</span> <span class="n">shift</span><span class="p">,</span> <span class="n">start_datetime_format</span><span class="o">=</span><span class="n">datetime_format</span><span class="p">):</span>
+        <span class="n">start_datetime_str</span> <span class="o">=</span> <span class="n">shift</span><span class="p">[</span><span class="n">start_datetime_key</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+        <span class="n">start_datetime</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">strptime</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;</span><span class="si">{start_datetime_str}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">f</span><span class="s1">&#39;</span><span class="si">{start_datetime_format}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="n">duration_str</span> <span class="o">=</span> <span class="n">shift</span><span class="p">[</span><span class="n">duration_key</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+        <span class="n">duration</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">timedelta</span><span class="p">(</span><span class="n">minutes</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">duration_str</span><span class="p">)))</span>
+        <span class="n">end_datetime</span> <span class="o">=</span> <span class="n">start_datetime</span> <span class="o">+</span> <span class="n">duration</span>
+        <span class="n">end_datetime_str</span> <span class="o">=</span> <span class="n">end_datetime</span><span class="o">.</span><span class="n">isoformat</span><span class="p">()</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;shift_end_date&quot;</span><span class="p">:</span> <span class="n">end_datetime_str</span><span class="p">,</span> <span class="o">**</span><span class="n">shift</span><span class="p">}</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_time_and_date_to_iso</span><span class="p">(</span><span class="n">time</span><span class="p">,</span> <span class="n">date</span><span class="p">,</span> <span class="n">time_format</span><span class="o">=</span><span class="n">time_format</span><span class="p">,</span> <span class="n">date_format</span><span class="o">=</span><span class="n">date_format</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">strptime</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;</span><span class="si">{time}</span><span class="s1"> </span><span class="si">{date}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">f</span><span class="s1">&#39;</span><span class="si">{time_format}</span><span class="s1"> </span><span class="si">{date_format}</span><span class="s1">&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">isoformat</span><span class="p">()</span>
+
+<div class="viewcode-block" id="ScheduleConnection.get_schedule"><a class="viewcode-back" href="../../../source/tangier_api.api.html#tangier_api.api.schedule.ScheduleConnection.get_schedule">[docs]</a>    <span class="k">def</span> <span class="nf">get_schedule</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">start_date</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">end_date</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">site_id</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">emp_id</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">xml_string</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">tags</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Wrapper for the GetSchedule method which facilitates adding necessary tags to the default xml string. Pulls schedule for one site for a given date range.</span>
+
+<span class="sd">        :param start_date: (str) %Y-%m-%d date string indicating the beginning of the range from which to pull the schedule</span>
+<span class="sd">        :param end_date: (str) %Y-%m-%d date string indicating the ending of the range from which to pull the schedule</span>
+<span class="sd">        :param site_id: (str or int) id corresponding to the site that the schedule will be pulled from</span>
+<span class="sd">        :param xml_string: (xml string)overrides the default credential and/or schedule injection into base_xml</span>
+<span class="sd">        :param tags: (kwargs) things to be injected into the request.</span>
+<span class="sd">        :return: xml response string with an error message or a schedule.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">start_date</span> <span class="ow">and</span> <span class="n">end_date</span> <span class="ow">and</span> <span class="p">(</span><span class="n">site_id</span> <span class="ow">or</span> <span class="n">emp_id</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="n">APICallError</span><span class="p">(</span><span class="s1">&#39;kwargs start_date, end_date, and (site_id or emp_id) are all required.&#39;</span><span class="p">)</span>
+        <span class="n">xml_string</span> <span class="o">=</span> <span class="n">xml_string</span> <span class="k">if</span> <span class="n">xml_string</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">base_xml</span>
+        <span class="n">base_tags</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">if</span> <span class="n">site_id</span><span class="p">:</span>
+            <span class="n">base_tags</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;site_id&quot;</span><span class="p">:</span> <span class="n">site_id</span><span class="p">})</span>
+        <span class="k">if</span> <span class="n">emp_id</span><span class="p">:</span>
+            <span class="n">base_tags</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;emp_id&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">emp_id</span><span class="p">)})</span>
+        <span class="n">base_tags</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;start_date&quot;</span><span class="p">:</span> <span class="n">start_date</span><span class="p">,</span> <span class="s2">&quot;end_date&quot;</span><span class="p">:</span> <span class="n">end_date</span><span class="p">,</span> <span class="o">**</span><span class="n">tags</span><span class="p">})</span>
+        <span class="n">xml_string</span> <span class="o">=</span> <span class="n">xmlmanip</span><span class="o">.</span><span class="n">inject_tags</span><span class="p">(</span><span class="n">xml_string</span><span class="p">,</span> <span class="n">injection_index</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">schedule</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+        <span class="n">xml_string</span> <span class="o">=</span> <span class="n">xmlmanip</span><span class="o">.</span><span class="n">inject_tags</span><span class="p">(</span><span class="n">xml_string</span><span class="p">,</span> <span class="n">parent_tag</span><span class="o">=</span><span class="s2">&quot;schedule&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">base_tags</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">debug</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">last_request</span> <span class="o">=</span> <span class="n">xml_string</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">GetSchedule</span><span class="p">(</span><span class="n">xml_string</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ScheduleConnection.get_schedules"><a class="viewcode-back" href="../../../source/tangier_api.api.html#tangier_api.api.schedule.ScheduleConnection.get_schedules">[docs]</a>    <span class="k">def</span> <span class="nf">get_schedules</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">start_date</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">end_date</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">site_ids</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">xml_string</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">tags</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Wrapper for the GetSchedule method which facilitates adding necessary tags to the default xml string.</span>
+<span class="sd">        Pulls schedule for multiple sites for a given date range. Makes multiple API calls to get schedules from multiple facilities.</span>
+
+<span class="sd">        :param start_date: (str) %Y-%m-%d date string indicating the beginning of the range from which to pull the schedule</span>
+<span class="sd">        :param end_date: (str) %Y-%m-%d date string indicating the ending of the range from which to pull the schedule</span>
+<span class="sd">        :param site_ids: (list or None) list of ids corresponding to the site(s) that the schedule will be pulled from, defaults to the list pulled from site_file in the __init__ function</span>
+<span class="sd">        :param xml_string: (xml string) overrides the default credential and/or schedule injection into base_xml</span>
+<span class="sd">        :param tags: (kwargs) things to be injected into the request.</span>
+<span class="sd">        :return: xml response string with an error message or a schedule.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">site_ids</span><span class="p">:</span>
+            <span class="n">site_ids</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">site_ids</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">site_ids</span> <span class="ow">and</span> <span class="n">start_date</span> <span class="ow">and</span> <span class="n">end_date</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="n">APICallError</span><span class="p">(</span><span class="s2">&quot;Required kwarg site_ids must be an enumerable object of site_id&#39;s.&quot;</span><span class="p">)</span>
+        <span class="n">xml_string</span> <span class="o">=</span> <span class="n">xml_string</span> <span class="k">if</span> <span class="n">xml_string</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">base_xml</span>
+        <span class="n">schedules</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">site_id</span> <span class="ow">in</span> <span class="n">site_ids</span><span class="p">:</span>
+            <span class="n">schedules</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_schedule</span><span class="p">(</span><span class="n">site_id</span><span class="o">=</span><span class="n">site_id</span><span class="p">,</span> <span class="n">start_date</span><span class="o">=</span><span class="n">start_date</span><span class="p">,</span>
+                                               <span class="n">end_date</span><span class="o">=</span><span class="n">end_date</span><span class="p">,</span> <span class="n">xml_string</span><span class="o">=</span><span class="n">xml_string</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">schedules</span></div>
+
+<div class="viewcode-block" id="ScheduleConnection.get_schedule_values_list"><a class="viewcode-back" href="../../../source/tangier_api.api.html#tangier_api.api.schedule.ScheduleConnection.get_schedule_values_list">[docs]</a>    <span class="k">def</span> <span class="nf">get_schedule_values_list</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">start_date</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">end_date</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">site_ids</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">emp_ids</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">xml_string</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">tags</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Wrapper for the get_schedules function that returns the retrieved schedules as a list of dicts. This can easily be converted into a DataFrame</span>
+
+<span class="sd">        :param start_date: (str) %Y-%m-%d date string indicating the beginning of the range from which to pull the schedule</span>
+<span class="sd">        :param end_date: (str) %Y-%m-%d date string indicating the ending of the range from which to pull the schedule</span>
+<span class="sd">        :param site_ids: (list or None) list of ids corresponding to the site(s) that the schedule will be pulled from, defaults to the list pulled from site_file in the __init__ function</span>
+<span class="sd">        :param emp_ids: (list or None) list of emp_ids corresponding to the employee(s) that the schedule will be pulled for</span>
+<span class="sd">        :param xml_string: (xml string) overrides the default credential and/or schedule injection into base_xml</span>
+<span class="sd">        :param tags: (kwargs) things to be injected into the request.</span>
+<span class="sd">        :return: (OrderedDict) filled with schedules.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">site_ids</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;site_ids&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">emp_ids</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">APICallError</span><span class="p">(</span><span class="s2">&quot;kwarg site_ids or emp_ids is required.&quot;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="p">(</span><span class="n">site_ids</span> <span class="ow">or</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;site_ids&#39;</span><span class="p">))</span> <span class="ow">and</span> <span class="n">emp_ids</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">APICallError</span><span class="p">(</span><span class="s2">&quot;schedule queries on both site_ids and emp_ids is currently not supported.&quot;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="ow">not</span> <span class="n">site_ids</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">emp_ids</span><span class="p">:</span>
+            <span class="n">site_ids</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">site_ids</span>
+        <span class="n">id_type</span> <span class="o">=</span> <span class="s1">&#39;site_id&#39;</span> <span class="k">if</span> <span class="n">site_ids</span> <span class="k">else</span> <span class="s1">&#39;emp_id&#39;</span>
+        <span class="n">id_list</span> <span class="o">=</span> <span class="n">site_ids</span> <span class="k">if</span> <span class="n">site_ids</span> <span class="k">else</span> <span class="n">emp_ids</span>
+        <span class="n">id_list</span> <span class="o">=</span> <span class="n">id_list</span> <span class="k">if</span> <span class="nb">issubclass</span><span class="p">(</span><span class="n">id_list</span><span class="o">.</span><span class="vm">__class__</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="k">else</span> <span class="p">[</span><span class="n">id_list</span><span class="p">]</span>
+        <span class="n">xml_string</span> <span class="o">=</span> <span class="n">xml_string</span> <span class="k">if</span> <span class="n">xml_string</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">base_xml</span>
+        <span class="n">schedule_values_list</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">_id</span> <span class="ow">in</span> <span class="n">id_list</span><span class="p">:</span>
+            <span class="n">id_kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="n">id_type</span><span class="p">:</span> <span class="n">_id</span><span class="p">}</span>
+            <span class="n">schedule_response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_schedule</span><span class="p">(</span><span class="n">xml_string</span><span class="o">=</span><span class="n">xml_string</span><span class="p">,</span> <span class="n">start_date</span><span class="o">=</span><span class="n">start_date</span><span class="p">,</span> <span class="n">end_date</span><span class="o">=</span><span class="n">end_date</span><span class="p">,</span>
+                                                  <span class="o">**</span><span class="n">id_kwargs</span><span class="p">,</span> <span class="o">**</span><span class="n">tags</span><span class="p">)</span>
+            <span class="n">temp_values_list</span> <span class="o">=</span> <span class="n">xmlmanip</span><span class="o">.</span><span class="n">XMLSchema</span><span class="p">(</span><span class="n">schedule_response</span><span class="p">)</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s1">&#39;@shiftdate&#39;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">comparison</span><span class="o">=</span><span class="s1">&#39;ne&#39;</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">shifts</span> <span class="ow">in</span> <span class="n">temp_values_list</span><span class="p">:</span>
+                <span class="n">schedule_values_list</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_extract_shifts</span><span class="p">(</span><span class="n">shifts</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">schedule_values_list</span></div></div>
+</pre></div>
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, JP.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../../',
+            VERSION:'',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../../_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

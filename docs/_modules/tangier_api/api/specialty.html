@@ -1,0 +1,640 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>tangier_api.api.specialty &mdash; tangier_api  documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../../../genindex.html"/>
+        <link rel="search" title="Search" href="../../../search.html"/>
+    <link rel="top" title="tangier_api  documentation" href="../../../index.html"/>
+        <link rel="up" title="Module code" href="../../index.html"/> 
+
+  
+  <script src="../../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home"> tangier_api
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../readme.html">Description</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../readme.html#overview">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../readme.html#installation">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../readme.html#setup">Setup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../readme.html#usage">Usage</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">tangier_api</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+        
+      <li>tangier_api.api.specialty</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for tangier_api.api.specialty</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">sys</span>
+
+<span class="kn">import</span> <span class="nn">pandas</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">import</span> <span class="nn">xmlmanip</span>
+
+<span class="kn">from</span> <span class="nn">tangier_api.api</span> <span class="k">import</span> <span class="n">ScheduleConnection</span>
+<span class="kn">from</span> <span class="nn">tangier_api.api</span> <span class="k">import</span> <span class="n">ProviderConnection</span>
+<span class="kn">from</span> <span class="nn">tangier_api.api</span> <span class="k">import</span> <span class="n">LocationConnection</span>
+<span class="kn">from</span> <span class="nn">tangier_api</span> <span class="k">import</span> <span class="n">helpers</span>
+<span class="kn">from</span> <span class="nn">tangier_api</span> <span class="k">import</span> <span class="n">exceptions</span>
+
+
+<div class="viewcode-block" id="ScheduleManipulation"><a class="viewcode-back" href="../../../source/tangier_api.api.html#tangier_api.api.specialty.ScheduleManipulation">[docs]</a><span class="k">class</span> <span class="nc">ScheduleManipulation</span><span class="p">(</span><span class="n">ScheduleConnection</span><span class="p">):</span>
+
+<div class="viewcode-block" id="ScheduleManipulation.save_schedule_from_range"><a class="viewcode-back" href="../../../source/tangier_api.api.html#tangier_api.api.specialty.ScheduleManipulation.save_schedule_from_range">[docs]</a>    <span class="k">def</span> <span class="nf">save_schedule_from_range</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">start_date</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">end_date</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">site_ids</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">xml_string</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">tags</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Saves schedule for indicated date range and facilities to ScheduleConnection object</span>
+
+<span class="sd">        :param start_date: (str) %Y-%m-%d date string indicating the beginning of the range from which to pull the schedule</span>
+<span class="sd">        :param end_date: (str) %Y-%m-%d date string indicating the ending of the range from which to pull the schedule</span>
+<span class="sd">        :param site_ids: (list or None) list of ids corresponding to the site(s) that the schedule will be pulled from, defaults to the list pulled from site_file in the __init__ function</span>
+<span class="sd">        :param xml_string: (xml string) overrides the default credential and/or schedule injection into base_xml</span>
+<span class="sd">        :param tags: (kwargs) things to be injected into the request.</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">schedule_values_list</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">ranges</span> <span class="o">=</span> <span class="n">helpers</span><span class="o">.</span><span class="n">date_ranges</span><span class="p">(</span><span class="n">start_date</span><span class="p">,</span> <span class="n">end_date</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">date_range</span> <span class="ow">in</span> <span class="n">ranges</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">date_range</span><span class="p">))</span>
+            <span class="n">schedule_values_list</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">get_schedule_values_list</span><span class="p">(</span><span class="n">date_range</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">date_range</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">site_ids</span><span class="p">,</span> <span class="n">xml_string</span><span class="p">,</span> <span class="o">**</span><span class="n">tags</span><span class="p">))</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">schedule_values_list</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">df</span><span class="o">.</span><span class="n">empty</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">exceptions</span><span class="o">.</span><span class="n">APICallError</span><span class="p">(</span><span class="s1">&#39;No schedule was returned in the given range.&#39;</span><span class="p">)</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">sort_values</span><span class="p">([</span><span class="s1">&#39;shift_start_date&#39;</span><span class="p">,</span> <span class="s1">&#39;shift_end_date&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">drop</span><span class="p">([</span><span class="s1">&#39;index&#39;</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">saved_schedule</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="ScheduleManipulation.get_schedule_open"><a class="viewcode-back" href="../../../source/tangier_api.api.html#tangier_api.api.specialty.ScheduleManipulation.get_schedule_open">[docs]</a>    <span class="k">def</span> <span class="nf">get_schedule_open</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">info</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Gets DataFrame of all entries from schedule where providername == &quot;open&quot; in the saved_schedule</span>
+
+<span class="sd">        :param info: (bool) whether or not to print out progress</span>
+<span class="sd">        :return: (DataFrame) of all entries from schedule which were not worked (reportedminutes == 0)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">saved_schedule</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">exceptions</span><span class="o">.</span><span class="n">APICallError</span><span class="p">(</span><span class="s1">&#39;There must be a saved schedule from save_schedule_from_range.&#39;</span><span class="p">)</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">saved_schedule</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">open_df</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;providername&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;open&#39;</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">open_df</span></div>
+
+<div class="viewcode-block" id="ScheduleManipulation.get_schedule_empties"><a class="viewcode-back" href="../../../source/tangier_api.api.html#tangier_api.api.specialty.ScheduleManipulation.get_schedule_empties">[docs]</a>    <span class="k">def</span> <span class="nf">get_schedule_empties</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">info</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Gets DataFrame of all entries from schedule which were not worked (reportedminutes == 0) in the saved_schedule</span>
+
+<span class="sd">        :param info: (bool) whether or not to print out progress</span>
+<span class="sd">        :return: (DataFrame) of all entries from schedule which were not worked (reportedminutes == 0)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">saved_schedule</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">exceptions</span><span class="o">.</span><span class="n">APICallError</span><span class="p">(</span><span class="s1">&#39;There must be a saved schedule from save_schedule_from_range.&#39;</span><span class="p">)</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">saved_schedule</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">empties</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;reportedminutes&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;0&#39;</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">empties</span></div>
+
+<div class="viewcode-block" id="ScheduleManipulation.get_schedule_conflicts"><a class="viewcode-back" href="../../../source/tangier_api.api.html#tangier_api.api.specialty.ScheduleManipulation.get_schedule_conflicts">[docs]</a>    <span class="k">def</span> <span class="nf">get_schedule_conflicts</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">info</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Gets DataFrame of all entries where an employee worked a double-booked shift in the saved_schedule</span>
+
+<span class="sd">        :param info: (bool) whether or not to print out progress</span>
+<span class="sd">        :return: (DataFrame) of all entries where an employee worked a double-booked shift</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">saved_schedule</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">exceptions</span><span class="o">.</span><span class="n">APICallError</span><span class="p">(</span><span class="s1">&#39;There must be a saved schedule from save_schedule_from_range.&#39;</span><span class="p">)</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">saved_schedule</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="s1">&#39;provider_primary_key&#39;</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">exceptions</span><span class="o">.</span><span class="n">APICallError</span><span class="p">(</span><span class="s1">&#39;get_schedule_conflicts, and get_schedule_duplicates &#39;</span>
+                               <span class="s1">&#39;rely on use of provider_primary_key=True.&#39;</span><span class="p">)</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">sort_values</span><span class="p">([</span><span class="s1">&#39;shift_start_date&#39;</span><span class="p">,</span> <span class="s1">&#39;shift_end_date&#39;</span><span class="p">])</span>
+        <span class="n">conflict_df</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span>
+        <span class="n">unique_ids</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;provider_primary_key&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span><span class="o">.</span><span class="n">unique</span><span class="p">())</span>
+        <span class="k">for</span> <span class="n">c</span><span class="p">,</span> <span class="n">emp_id</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">unique_ids</span><span class="p">):</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">c</span> <span class="o">%</span> <span class="mi">13</span> <span class="o">==</span> <span class="mi">12</span> <span class="ow">or</span> <span class="n">c</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">unique_ids</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="ow">and</span> <span class="n">info</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;{(c+1)/len(unique_ids)*100:&gt;5.2f}%&#39;</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">info</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;{(c+1)/len(unique_ids)*100:&gt;5.2f}%&#39;</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s1">&#39;,  &#39;</span><span class="p">)</span>
+            <span class="n">emp_sched</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;provider_primary_key&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">emp_id</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">emp_sched</span><span class="o">.</span><span class="n">iterrows</span><span class="p">():</span>
+                <span class="k">for</span> <span class="n">j</span><span class="p">,</span> <span class="n">row2</span> <span class="ow">in</span> <span class="n">emp_sched</span><span class="o">.</span><span class="n">iterrows</span><span class="p">():</span>
+                    <span class="k">if</span> <span class="n">j</span> <span class="o">&lt;=</span> <span class="n">i</span><span class="p">:</span>
+                        <span class="k">continue</span>
+                    <span class="k">elif</span> <span class="n">row2</span><span class="p">[</span><span class="s1">&#39;shift_start_date&#39;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">row</span><span class="p">[</span><span class="s1">&#39;shift_end_date&#39;</span><span class="p">]:</span>
+                        <span class="k">break</span>
+                    <span class="k">if</span> <span class="p">((</span><span class="n">row</span><span class="p">[</span><span class="s1">&#39;shift_start_date&#39;</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">row2</span><span class="p">[</span><span class="s1">&#39;shift_end_date&#39;</span><span class="p">])</span> <span class="ow">and</span> <span class="p">(</span>
+                            <span class="n">row</span><span class="p">[</span><span class="s1">&#39;shift_end_date&#39;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">row2</span><span class="p">[</span><span class="s1">&#39;shift_start_date&#39;</span><span class="p">])):</span>
+                        <span class="n">row</span><span class="p">[</span><span class="s1">&#39;conflict_shift_start_date&#39;</span><span class="p">],</span> <span class="n">row</span><span class="p">[</span><span class="s1">&#39;conflict_shift_end_date&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">row2</span><span class="p">[</span><span class="s1">&#39;shift_start_date&#39;</span><span class="p">],</span> \
+                                                                                           <span class="n">row2</span><span class="p">[</span><span class="s1">&#39;shift_end_date&#39;</span><span class="p">]</span>
+                        <span class="n">row</span><span class="p">[</span><span class="s1">&#39;conflict_index&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">j</span>
+                        <span class="n">conflict_df</span> <span class="o">=</span> <span class="n">conflict_df</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                            <span class="n">row</span><span class="p">[[</span><span class="s1">&#39;conflict_index&#39;</span><span class="p">,</span> <span class="s1">&#39;provider_primary_key&#39;</span><span class="p">,</span> <span class="s1">&#39;shift_start_date&#39;</span><span class="p">,</span>
+                                 <span class="s1">&#39;shift_end_date&#39;</span><span class="p">,</span> <span class="s1">&#39;conflict_shift_start_date&#39;</span><span class="p">,</span>
+                                 <span class="s1">&#39;conflict_shift_end_date&#39;</span><span class="p">]])</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">conflict_df</span><span class="o">.</span><span class="n">empty</span><span class="p">:</span>
+            <span class="n">conflict_df</span><span class="p">[</span><span class="s1">&#39;conflict_index&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">conflict_df</span><span class="p">[</span><span class="s1">&#39;conflict_index&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">conflict_df</span></div>
+
+<div class="viewcode-block" id="ScheduleManipulation.get_schedule_duplicates"><a class="viewcode-back" href="../../../source/tangier_api.api.html#tangier_api.api.specialty.ScheduleManipulation.get_schedule_duplicates">[docs]</a>    <span class="k">def</span> <span class="nf">get_schedule_duplicates</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">info</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Gets DataFrame of all duplicate entries in the saved_schedule</span>
+
+<span class="sd">        :param info: (bool) whether or not to print out progress</span>
+<span class="sd">        :return: (DataFrame) of all duplicate entries</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">saved_schedule</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">exceptions</span><span class="o">.</span><span class="n">APICallError</span><span class="p">(</span><span class="s1">&#39;There must be a saved schedule from save_schedule_from_range.&#39;</span><span class="p">)</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">saved_schedule</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="s1">&#39;provider_primary_key&#39;</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">exceptions</span><span class="o">.</span><span class="n">APICallError</span><span class="p">(</span><span class="s1">&#39;get_schedule_conflicts, and get_schedule_duplicates &#39;</span>
+                               <span class="s1">&#39;rely on use of provider_primary_key=True.&#39;</span><span class="p">)</span>
+        <span class="n">dupe_df</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span>
+        <span class="n">unique_ids</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;provider_primary_key&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span><span class="o">.</span><span class="n">unique</span><span class="p">())</span>
+        <span class="k">for</span> <span class="n">c</span><span class="p">,</span> <span class="n">emp_id</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">unique_ids</span><span class="p">):</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">c</span> <span class="o">%</span> <span class="mi">13</span> <span class="o">==</span> <span class="mi">12</span> <span class="ow">or</span> <span class="n">c</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">unique_ids</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="ow">and</span> <span class="n">info</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;{(c+1)/len(unique_ids)*100:&gt;5.2f}%&#39;</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">info</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;{(c+1)/len(unique_ids)*100:&gt;5.2f}%&#39;</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s1">&#39;,  &#39;</span><span class="p">)</span>
+            <span class="n">emp_sched</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;provider_primary_key&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">emp_id</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">emp_sched</span><span class="o">.</span><span class="n">iterrows</span><span class="p">():</span>
+                <span class="k">for</span> <span class="n">j</span><span class="p">,</span> <span class="n">row2</span> <span class="ow">in</span> <span class="n">emp_sched</span><span class="o">.</span><span class="n">iterrows</span><span class="p">():</span>
+                    <span class="k">if</span> <span class="n">j</span> <span class="o">&lt;=</span> <span class="n">i</span><span class="p">:</span>
+                        <span class="k">continue</span>
+                    <span class="k">elif</span> <span class="n">row2</span><span class="p">[</span><span class="s1">&#39;shift_start_date&#39;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">row</span><span class="p">[</span><span class="s1">&#39;shift_end_date&#39;</span><span class="p">]:</span>
+                        <span class="k">break</span>
+                    <span class="k">if</span> <span class="p">((</span><span class="n">row</span><span class="p">[</span><span class="s1">&#39;shift_start_date&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">row2</span><span class="p">[</span><span class="s1">&#39;shift_start_date&#39;</span><span class="p">])</span> <span class="ow">and</span> <span class="p">(</span>
+                            <span class="n">row</span><span class="p">[</span><span class="s1">&#39;shift_end_date&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">row2</span><span class="p">[</span><span class="s1">&#39;shift_end_date&#39;</span><span class="p">])):</span>
+                        <span class="n">row</span><span class="p">[</span><span class="s1">&#39;dupe_shift_start_date&#39;</span><span class="p">],</span> <span class="n">row</span><span class="p">[</span><span class="s1">&#39;dupe_shift_end_date&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">row2</span><span class="p">[</span><span class="s1">&#39;shift_start_date&#39;</span><span class="p">],</span> <span class="n">row2</span><span class="p">[</span>
+                            <span class="s1">&#39;shift_end_date&#39;</span><span class="p">]</span>
+                        <span class="n">row</span><span class="p">[</span><span class="s1">&#39;dupe_index&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">j</span>
+                        <span class="n">dupe_df</span> <span class="o">=</span> <span class="n">dupe_df</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                            <span class="n">row</span><span class="p">[[</span><span class="s1">&#39;dupe_index&#39;</span><span class="p">,</span> <span class="s1">&#39;provider_primary_key&#39;</span><span class="p">,</span> <span class="s1">&#39;shift_start_date&#39;</span><span class="p">,</span> <span class="s1">&#39;shift_end_date&#39;</span><span class="p">,</span>
+                                 <span class="s1">&#39;dupe_shift_start_date&#39;</span><span class="p">,</span> <span class="s1">&#39;dupe_shift_end_date&#39;</span><span class="p">]])</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">dupe_df</span><span class="o">.</span><span class="n">empty</span><span class="p">:</span>
+            <span class="n">dupe_df</span><span class="p">[</span><span class="s1">&#39;dupe_index&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">dupe_df</span><span class="p">[</span><span class="s1">&#39;dupe_index&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">dupe_df</span></div>
+
+<div class="viewcode-block" id="ScheduleManipulation.generate_duplicates_report"><a class="viewcode-back" href="../../../source/tangier_api.api.html#tangier_api.api.specialty.ScheduleManipulation.generate_duplicates_report">[docs]</a>    <span class="k">def</span> <span class="nf">generate_duplicates_report</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dupes</span><span class="p">):</span>
+        <span class="n">dupes</span> <span class="o">=</span> <span class="n">dupes</span><span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>
+        <span class="c1"># dupes_left will have originals, dupes_right will have duplicates of originals</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="s1">&#39;index&#39;</span> <span class="ow">in</span> <span class="n">dupes</span><span class="o">.</span><span class="n">columns</span> <span class="ow">or</span> <span class="ow">not</span> <span class="s1">&#39;dupe_index&#39;</span> <span class="ow">in</span> <span class="n">dupes</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span>
+        <span class="n">dupes_left</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">saved_schedule</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">dupes</span><span class="p">[</span><span class="s1">&#39;index&#39;</span><span class="p">]]</span><span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>
+        <span class="n">dupes_right</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">saved_schedule</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">dupes</span><span class="p">[</span><span class="s1">&#39;dupe_index&#39;</span><span class="p">]]</span><span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>
+        <span class="c1"># we append and sort on the two indices, the final result has alternating rows of orignals and duplicates</span>
+        <span class="n">dupes_append</span> <span class="o">=</span> <span class="n">dupes_left</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dupes_right</span><span class="p">)</span><span class="o">.</span><span class="n">reset_index</span><span class="p">()</span><span class="o">.</span><span class="n">sort_values</span><span class="p">([</span><span class="s1">&#39;level_0&#39;</span><span class="p">,</span> <span class="s1">&#39;index&#39;</span><span class="p">])</span>
+        <span class="n">dupes_append</span> <span class="o">=</span> <span class="n">dupes_append</span><span class="o">.</span><span class="n">set_index</span><span class="p">([</span><span class="s1">&#39;level_0&#39;</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">dupes_append</span></div>
+
+<div class="viewcode-block" id="ScheduleManipulation.generate_conflicts_report"><a class="viewcode-back" href="../../../source/tangier_api.api.html#tangier_api.api.specialty.ScheduleManipulation.generate_conflicts_report">[docs]</a>    <span class="k">def</span> <span class="nf">generate_conflicts_report</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">conflicts</span><span class="p">):</span>
+        <span class="n">conflicts</span> <span class="o">=</span> <span class="n">conflicts</span><span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>
+        <span class="n">conflicts_left</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">saved_schedule</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">conflicts</span><span class="p">[</span><span class="s1">&#39;index&#39;</span><span class="p">]]</span><span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="s1">&#39;index&#39;</span> <span class="ow">in</span> <span class="n">conflicts</span><span class="o">.</span><span class="n">columns</span> <span class="ow">or</span> <span class="ow">not</span> <span class="s1">&#39;conflict_index&#39;</span> <span class="ow">in</span> <span class="n">conflicts</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span>
+        <span class="n">conflicts_right</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">saved_schedule</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">conflicts</span><span class="p">[</span><span class="s1">&#39;conflict_index&#39;</span><span class="p">]]</span><span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>
+        <span class="n">conflicts_append</span> <span class="o">=</span> <span class="n">conflicts_left</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">conflicts_right</span><span class="p">)</span><span class="o">.</span><span class="n">reset_index</span><span class="p">()</span><span class="o">.</span><span class="n">sort_values</span><span class="p">([</span><span class="s1">&#39;level_0&#39;</span><span class="p">,</span> <span class="s1">&#39;index&#39;</span><span class="p">])</span>
+        <span class="n">conflicts_append</span> <span class="o">=</span> <span class="n">conflicts_append</span><span class="o">.</span><span class="n">set_index</span><span class="p">([</span><span class="s1">&#39;level_0&#39;</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">conflicts_append</span></div>
+
+<div class="viewcode-block" id="ScheduleManipulation.remove_schedule_open"><a class="viewcode-back" href="../../../source/tangier_api.api.html#tangier_api.api.specialty.ScheduleManipulation.remove_schedule_open">[docs]</a>    <span class="k">def</span> <span class="nf">remove_schedule_open</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Removes all entries from schedule which are just open shifts (providername == &#39;open&#39;) in the saved_schedule</span>
+
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">initial_length</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">saved_schedule</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">open_df</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_schedule_open</span><span class="p">()</span><span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">open_df</span><span class="o">.</span><span class="n">empty</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;No open shifts to remove.&#39;</span><span class="p">)</span>
+            <span class="k">return</span>
+        <span class="n">rows_to_remove</span> <span class="o">=</span> <span class="n">open_df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">temp_df</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">saved_schedule</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">open_df</span><span class="p">[</span><span class="s1">&#39;index&#39;</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">temp_df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">initial_length</span> <span class="o">-</span> <span class="n">rows_to_remove</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">saved_schedule</span> <span class="o">=</span> <span class="n">temp_df</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">exceptions</span><span class="o">.</span><span class="n">APIError</span><span class="p">(</span>
+                <span class="s1">&#39;An unexpected number of entries were removed; this indicates an issue with the saved schedule.&#39;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;Removed </span><span class="si">{rows_to_remove}</span><span class="s1"> open shifts.&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ScheduleManipulation.remove_schedule_empties"><a class="viewcode-back" href="../../../source/tangier_api.api.html#tangier_api.api.specialty.ScheduleManipulation.remove_schedule_empties">[docs]</a>    <span class="k">def</span> <span class="nf">remove_schedule_empties</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Removes all entries from schedule which were not worked (reportedminutes == 0) in the saved_schedule</span>
+
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">initial_length</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">saved_schedule</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">empty_df</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_schedule_empties</span><span class="p">()</span><span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">empty_df</span><span class="o">.</span><span class="n">empty</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;No empties to remove.&#39;</span><span class="p">)</span>
+            <span class="k">return</span>
+        <span class="n">rows_to_remove</span> <span class="o">=</span> <span class="n">empty_df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">temp_df</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">saved_schedule</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">empty_df</span><span class="p">[</span><span class="s1">&#39;index&#39;</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">temp_df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">initial_length</span> <span class="o">-</span> <span class="n">rows_to_remove</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">saved_schedule</span> <span class="o">=</span> <span class="n">temp_df</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">exceptions</span><span class="o">.</span><span class="n">APIError</span><span class="p">(</span>
+                <span class="s1">&#39;An unexpected number of entries were removed; this indicates an issue with the saved schedule.&#39;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;Removed </span><span class="si">{rows_to_remove}</span><span class="s1"> empties.&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ScheduleManipulation.remove_schedule_duplicates"><a class="viewcode-back" href="../../../source/tangier_api.api.html#tangier_api.api.specialty.ScheduleManipulation.remove_schedule_duplicates">[docs]</a>    <span class="k">def</span> <span class="nf">remove_schedule_duplicates</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Removes all duplicate entries in the saved_schedule</span>
+
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">initial_length</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">saved_schedule</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">dupe_df</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_schedule_duplicates</span><span class="p">()</span>
+        <span class="c1"># report must be generated before the duplicates are removed</span>
+        <span class="n">duplicates_report</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">generate_duplicates_report</span><span class="p">(</span><span class="n">dupe_df</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">dupe_df</span><span class="o">.</span><span class="n">empty</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;No duplicates to remove.&#39;</span><span class="p">)</span>
+            <span class="k">return</span>
+        <span class="n">rows_to_remove</span> <span class="o">=</span> <span class="n">dupe_df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">temp_df</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">saved_schedule</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">dupe_df</span><span class="p">[</span><span class="s1">&#39;dupe_index&#39;</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">temp_df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">initial_length</span> <span class="o">-</span> <span class="n">rows_to_remove</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">saved_schedule</span> <span class="o">=</span> <span class="n">temp_df</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">exceptions</span><span class="o">.</span><span class="n">APIError</span><span class="p">(</span>
+                <span class="s1">&#39;An unexpected number of entries were removed; this indicates an issue with the saved schedule.&#39;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;Removed </span><span class="si">{rows_to_remove}</span><span class="s1"> duplicates.&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ScheduleManipulation.remove_schedule_conflicts"><a class="viewcode-back" href="../../../source/tangier_api.api.html#tangier_api.api.specialty.ScheduleManipulation.remove_schedule_conflicts">[docs]</a>    <span class="k">def</span> <span class="nf">remove_schedule_conflicts</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Removes all conflicting entries in the saved_schedule</span>
+
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">initial_length</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">saved_schedule</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">conflict_df</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_schedule_conflicts</span><span class="p">()</span>
+        <span class="c1"># report must be generated before the duplicates are removed</span>
+        <span class="n">conflicts_report</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">generate_conflicts_report</span><span class="p">(</span><span class="n">conflict_df</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">conflict_df</span><span class="o">.</span><span class="n">empty</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;No duplicates to remove.&#39;</span><span class="p">)</span>
+            <span class="k">return</span>
+        <span class="n">rows_to_remove</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">conflict_df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">temp_df</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">saved_schedule</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">conflict_df</span><span class="p">[</span><span class="s1">&#39;conflict_index&#39;</span><span class="p">])</span>
+        <span class="n">temp_df</span> <span class="o">=</span> <span class="n">temp_df</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">conflict_df</span><span class="o">.</span><span class="n">reset_index</span><span class="p">()[</span><span class="s1">&#39;index&#39;</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">temp_df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">initial_length</span> <span class="o">-</span> <span class="n">rows_to_remove</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">saved_schedule</span> <span class="o">=</span> <span class="n">temp_df</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">exceptions</span><span class="o">.</span><span class="n">APIError</span><span class="p">(</span>
+                <span class="s1">&#39;An unexpected number of entries were removed; this indicates an issue with the saved schedule.&#39;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;Removed </span><span class="si">{rows_to_remove}</span><span class="s1"> conflicts.&#39;</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="ProviderReport"><a class="viewcode-back" href="../../../source/tangier_api.api.html#tangier_api.api.specialty.ProviderReport">[docs]</a><span class="k">class</span> <span class="nc">ProviderReport</span><span class="p">(</span><span class="n">ProviderConnection</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">file</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="c1"># TODO: isinstance</span>
+        <span class="k">if</span> <span class="n">file</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span> <span class="o">==</span> <span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">df</span> <span class="o">=</span> <span class="n">file</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="k">elif</span> <span class="n">file</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;.CSV&#39;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">df</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">file</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">df</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">read_excel</span><span class="p">(</span><span class="n">file</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">ProviderReport</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+<div class="viewcode-block" id="ProviderReport.add_to_report"><a class="viewcode-back" href="../../../source/tangier_api.api.html#tangier_api.api.specialty.ProviderReport.add_to_report">[docs]</a>    <span class="k">def</span> <span class="nf">add_to_report</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="n">key_column</span><span class="o">=</span><span class="s2">&quot;provider_id&quot;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Adds the specified provider information to an excel or csv report according to NPI (emp_id)</span>
+
+<span class="sd">        :param args: (list) of provider fields to be retrieved from tangier and added to the report</span>
+<span class="sd">        :param key_column: (str) indicates the header name of the column that contains npis or emp_ids on the report</span>
+<span class="sd">        :return: None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">clean_ids</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">x</span><span class="p">))</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">re</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="s1">&#39;[a-zA-Z]&#39;</span><span class="p">,</span> <span class="n">f</span><span class="s1">&#39;</span><span class="si">{x}</span><span class="s1">&#39;</span><span class="p">)</span> <span class="k">else</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">[</span><span class="n">key_column</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">[</span><span class="n">key_column</span><span class="p">]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">clean_ids</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">[</span><span class="n">key_column</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">[</span><span class="n">key_column</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span>
+        <span class="n">provider_ids</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">[</span><span class="n">key_column</span><span class="p">]</span><span class="o">.</span><span class="n">unique</span><span class="p">())</span>
+        <span class="n">info_list</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">provider_info_values_list</span><span class="p">(</span><span class="n">provider_ids</span><span class="o">=</span><span class="n">provider_ids</span><span class="p">)</span>
+        <span class="n">get_if_in_keys</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">x</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="k">else</span> <span class="s1">&#39;&#39;</span>
+        <span class="n">columns_to_add</span> <span class="o">=</span> <span class="p">{</span><span class="n">arg</span><span class="p">:</span> <span class="n">f</span><span class="s1">&#39;provider_</span><span class="si">{arg}</span><span class="s1">&#39;</span> <span class="k">for</span> <span class="n">arg</span> <span class="ow">in</span> <span class="n">args</span><span class="p">}</span>
+        <span class="k">for</span> <span class="n">column</span> <span class="ow">in</span> <span class="n">columns_to_add</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">[</span><span class="n">column</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+        <span class="n">original_index_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">df</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">row</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">iterrows</span><span class="p">():</span>
+            <span class="n">provider_info</span> <span class="o">=</span> <span class="p">[</span><span class="o">*</span><span class="nb">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;emp_id&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="n">row</span><span class="p">[</span><span class="n">key_column</span><span class="p">],</span> <span class="n">info_list</span><span class="p">)]</span>
+            <span class="k">if</span> <span class="n">provider_info</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">dict_key</span><span class="p">,</span> <span class="n">df_column</span> <span class="ow">in</span> <span class="n">columns_to_add</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">index</span><span class="p">,</span> <span class="n">f</span><span class="s1">&#39;</span><span class="si">{df_column}</span><span class="s1">&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">get_if_in_keys</span><span class="p">(</span><span class="n">provider_info</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">dict_key</span><span class="p">)</span>
+
+        <span class="n">columns</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">values</span><span class="p">)</span>
+        <span class="n">reordered_columns</span> <span class="o">=</span> <span class="p">[</span><span class="n">key_column</span><span class="p">,</span> <span class="o">*</span><span class="n">columns_to_add</span><span class="o">.</span><span class="n">values</span><span class="p">()]</span>
+        <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">reordered_columns</span><span class="p">:</span>
+            <span class="n">columns</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">col</span><span class="p">)</span>
+        <span class="n">reordered_columns</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">columns</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">df</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">[[</span><span class="o">*</span><span class="n">reordered_columns</span><span class="p">]]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">df</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="s2">&quot;index&quot;</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">original_index_name</span> <span class="k">else</span> <span class="n">original_index_name</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="ScheduleWithData"><a class="viewcode-back" href="../../../source/tangier_api.api.html#tangier_api.api.specialty.ScheduleWithData">[docs]</a><span class="k">class</span> <span class="nc">ScheduleWithData</span><span class="p">:</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">schedule_connection</span><span class="p">,</span> <span class="n">provider_connection</span><span class="p">,</span> <span class="n">location_connection</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="kn">import</span> <span class="nn">pandas</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;</span><span class="si">{self.__name__}</span><span class="s1"> requires pandas to be importable in your environment.&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">schedule_connection</span><span class="p">,</span> <span class="n">ScheduleConnection</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="n">exceptions</span><span class="o">.</span><span class="n">APIError</span><span class="p">(</span><span class="s1">&#39;schedule_connection argument (arg[0]) must be a ScheduleConnection instance.&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">provider_connection</span><span class="p">,</span> <span class="n">ProviderConnection</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="n">exceptions</span><span class="o">.</span><span class="n">APIError</span><span class="p">(</span><span class="s1">&#39;provider_connection argument (arg[1]) must be a ProviderConnection instance.&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">location_connection</span><span class="p">,</span> <span class="n">LocationConnection</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="n">exceptions</span><span class="o">.</span><span class="n">APIError</span><span class="p">(</span><span class="s1">&#39;location_connection argument (arg[0]) must be a LocationConnection instance.&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sconn</span> <span class="o">=</span> <span class="n">schedule_connection</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pconn</span> <span class="o">=</span> <span class="n">provider_connection</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lconn</span> <span class="o">=</span> <span class="n">location_connection</span>
+
+    <span class="k">def</span> <span class="nf">_get_provider_info</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">providers</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pconn</span><span class="o">.</span><span class="n">provider_info_values_list</span><span class="p">(</span><span class="n">all_providers</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                                                                               <span class="n">use_primary_keys</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_get_location_info</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">locations</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lconn</span><span class="o">.</span><span class="n">location_info_values_list</span><span class="p">(</span><span class="n">site_ids</span><span class="o">=</span><span class="s1">&#39;ALL_SITE_IDS&#39;</span><span class="p">))</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="ScheduleWithData.save_schedule_from_range"><a class="viewcode-back" href="../../../source/tangier_api.api.html#tangier_api.api.specialty.ScheduleWithData.save_schedule_from_range">[docs]</a>    <span class="k">def</span> <span class="nf">save_schedule_from_range</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">start_date</span><span class="p">,</span> <span class="n">end_date</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_get_provider_info</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_get_location_info</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sconn</span><span class="o">.</span><span class="n">save_schedule_from_range</span><span class="p">(</span><span class="n">start_date</span><span class="p">,</span> <span class="n">end_date</span><span class="p">,</span>
+                                            <span class="n">site_ids</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">locations</span><span class="p">[</span><span class="s1">&#39;site_id&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">unique</span><span class="p">()),</span>
+                                            <span class="n">include_provider_primary_key</span><span class="o">=</span><span class="s1">&#39;true&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">saved_schedule</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sconn</span><span class="o">.</span><span class="n">saved_schedule</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">temp_locations</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">locations</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;@action&#39;</span><span class="p">,</span> <span class="s1">&#39;is_scheduled&#39;</span><span class="p">])</span> \
+            <span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;site_name&#39;</span><span class="p">,</span> <span class="s1">&#39;short_name&#39;</span><span class="p">:</span> <span class="s1">&#39;site_short_name&#39;</span><span class="p">})</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">temp_providers</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">providers</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span>
+            <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;@action&#39;</span><span class="p">,</span> <span class="s1">&#39;processed&#39;</span><span class="p">,</span> <span class="s1">&#39;comment&#39;</span><span class="p">,</span> <span class="s1">&#39;street&#39;</span><span class="p">,</span> <span class="s1">&#39;city&#39;</span><span class="p">,</span> <span class="s1">&#39;state&#39;</span><span class="p">,</span> <span class="s1">&#39;zip&#39;</span><span class="p">])</span>
+        <span class="n">with_sites</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">saved_schedule</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">temp_locations</span><span class="p">,</span> <span class="n">how</span><span class="o">=</span><span class="s1">&#39;left&#39;</span><span class="p">,</span> <span class="n">left_on</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;siteid&#39;</span><span class="p">],</span>
+                                               <span class="n">right_on</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;site_id&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;location&#39;</span><span class="p">])</span>
+        <span class="n">with_all</span> <span class="o">=</span> <span class="n">with_sites</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">temp_providers</span><span class="p">,</span> <span class="n">how</span><span class="o">=</span><span class="s1">&#39;left&#39;</span><span class="p">,</span> <span class="n">left_on</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;providerprimarykey&#39;</span><span class="p">],</span>
+                                    <span class="n">right_on</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;provider_primary_key&#39;</span><span class="p">])</span>
+        <span class="n">with_all</span> <span class="o">=</span> <span class="n">with_all</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;empid&#39;</span><span class="p">,</span> <span class="s1">&#39;siteid&#39;</span><span class="p">,</span> <span class="s1">&#39;providerprimarykey&#39;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">saved_schedule</span> <span class="o">=</span> <span class="n">with_all</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sconn</span><span class="o">.</span><span class="n">saved_schedule</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">saved_schedule</span></div></div>
+
+
+<div class="viewcode-block" id="ProviderLocations"><a class="viewcode-back" href="../../../source/tangier_api.api.html#tangier_api.api.specialty.ProviderLocations">[docs]</a><span class="k">class</span> <span class="nc">ProviderLocations</span><span class="p">:</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pconn</span><span class="p">,</span> <span class="n">lconn</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pconn</span> <span class="o">=</span> <span class="n">pconn</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lconn</span> <span class="o">=</span> <span class="n">lconn</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">all_locations</span> <span class="o">=</span> <span class="n">lconn</span><span class="o">.</span><span class="n">location_info_values_list</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">all_providers</span> <span class="o">=</span> <span class="n">pconn</span><span class="o">.</span><span class="n">provider_info_values_list</span><span class="p">(</span><span class="n">all_providers</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">all_location_provider_values</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">all_location_provider_values</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        we want to go get them if an access is attempted and we haven&#39;t gotten them already</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">__all_location_provider_values</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">all_location_provider_values</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_all_location_provider_values</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__all_location_provider_values</span>
+
+    <span class="nd">@all_location_provider_values</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">all_location_provider_values</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__all_location_provider_values</span> <span class="o">=</span> <span class="p">[</span><span class="o">*</span><span class="n">val</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">_get_all_location_provider_values</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">values_list</span><span class="p">,</span> <span class="n">current_line</span> <span class="o">=</span> <span class="p">[],</span> <span class="s1">&#39;&#39;</span>
+        <span class="k">for</span> <span class="n">location</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">all_locations</span><span class="p">:</span>
+            <span class="n">values_list</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">location_provider_values</span><span class="p">(</span><span class="n">location</span><span class="p">[</span><span class="s1">&#39;site_id&#39;</span><span class="p">]))</span>
+            <span class="n">current_line</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_print_stream</span><span class="p">(</span><span class="n">location</span><span class="p">[</span><span class="s1">&#39;site_id&#39;</span><span class="p">],</span> <span class="n">current_line</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">all_location_provider_values</span> <span class="o">=</span> <span class="p">[</span><span class="o">*</span><span class="n">values_list</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">values_list</span>
+
+    <span class="k">def</span> <span class="nf">_print_stream</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">current_item</span><span class="p">,</span> <span class="n">current_line</span><span class="p">):</span>
+        <span class="n">new_line</span> <span class="o">=</span> <span class="n">f</span><span class="s1">&#39;{current_line + &quot; &quot; if current_line else &quot;&quot;}</span><span class="si">{current_item}</span><span class="s1">&#39;</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">new_line</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">79</span><span class="p">:</span>
+            <span class="n">new_line</span> <span class="o">=</span> <span class="n">f</span><span class="s1">&#39;</span><span class="si">{current_item}</span><span class="s1"> &#39;</span>
+            <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">new_line</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;</span><span class="si">{current_item}</span><span class="s1"> &#39;</span><span class="p">)</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">new_line</span>
+
+<div class="viewcode-block" id="ProviderLocations.location_provider_info"><a class="viewcode-back" href="../../../source/tangier_api.api.html#tangier_api.api.specialty.ProviderLocations.location_provider_info">[docs]</a>    <span class="k">def</span> <span class="nf">location_provider_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">site_id</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Sends a provider info request info for all provider_ids for one site_id</span>
+<span class="sd">        :param site_id_in: (str) site_id to get provider info for</span>
+<span class="sd">        :return: xml with a provider info response</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">xml_string</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pconn</span><span class="o">.</span><span class="n">base_xml</span>
+        <span class="n">xml_string</span> <span class="o">=</span> <span class="n">xmlmanip</span><span class="o">.</span><span class="n">inject_tags</span><span class="p">(</span><span class="n">xml_string</span><span class="p">,</span> <span class="n">injection_index</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">providers</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+        <span class="n">provider_dict</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;provider&#39;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;action&quot;</span><span class="p">:</span> <span class="s2">&quot;info&quot;</span><span class="p">,</span> <span class="s2">&quot;__inner_tag&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;site_id&quot;</span><span class="p">:</span> <span class="n">site_id</span><span class="p">,</span>
+                    <span class="s2">&quot;provider_primary_key&quot;</span><span class="p">:</span> <span class="s2">&quot;ALL&quot;</span><span class="p">,</span>
+                <span class="p">}</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+        <span class="n">xml_string</span> <span class="o">=</span> <span class="n">xmlmanip</span><span class="o">.</span><span class="n">inject_tags</span><span class="p">(</span><span class="n">xml_string</span><span class="p">,</span> <span class="n">parent_tag</span><span class="o">=</span><span class="s2">&quot;providers&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">provider_dict</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">pconn</span><span class="o">.</span><span class="n">MaintainProviders</span><span class="p">(</span><span class="n">xml_string</span><span class="p">)</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ProviderLocations.location_provider_values"><a class="viewcode-back" href="../../../source/tangier_api.api.html#tangier_api.api.specialty.ProviderLocations.location_provider_values">[docs]</a>    <span class="k">def</span> <span class="nf">location_provider_values</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">site_id</span><span class="p">):</span>
+        <span class="n">location_provider_info_response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">location_provider_info</span><span class="p">(</span><span class="n">site_id</span><span class="p">)</span>
+        <span class="n">location_provider_info_schema</span> <span class="o">=</span> <span class="n">xmlmanip</span><span class="o">.</span><span class="n">XMLSchema</span><span class="p">(</span><span class="n">location_provider_info_response</span><span class="p">)</span>
+        <span class="n">location_provider_values</span> <span class="o">=</span> <span class="n">location_provider_info_schema</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">site_id__ne</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">location_provider_values</span></div>
+
+<div class="viewcode-block" id="ProviderLocations.join_all_locations_with_all_providers"><a class="viewcode-back" href="../../../source/tangier_api.api.html#tangier_api.api.specialty.ProviderLocations.join_all_locations_with_all_providers">[docs]</a>    <span class="k">def</span> <span class="nf">join_all_locations_with_all_providers</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">normalized_provider_location_values</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">all_location_provider_values</span>
+        <span class="n">normalized_provider_location_values_df</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">normalized_provider_location_values</span><span class="p">)</span>
+        <span class="n">provider_info_df</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">all_providers</span><span class="p">)</span>
+        <span class="n">joined_df</span> <span class="o">=</span> <span class="n">normalized_provider_location_values_df</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">provider_info_df</span><span class="p">,</span> <span class="n">how</span><span class="o">=</span><span class="s1">&#39;inner&#39;</span><span class="p">,</span>
+                                                                 <span class="n">left_on</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;provider_primary_key&#39;</span><span class="p">,</span> <span class="s1">&#39;emp_id&#39;</span><span class="p">],</span>
+                                                                 <span class="n">right_on</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;provider_primary_key&#39;</span><span class="p">,</span> <span class="s1">&#39;emp_id&#39;</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">joined_df</span></div></div>
+</pre></div>
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, JP.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../../',
+            VERSION:'',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../../_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>
