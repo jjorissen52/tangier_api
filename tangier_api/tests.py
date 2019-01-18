@@ -9,7 +9,8 @@ def generate_empty_list_error_response(test, list_name):
 
 class TestScheduleConnection(unittest.TestCase):
     def test_get_schedule(self):
-        from tangier_api.api import ScheduleConnection, TESTING_SITE
+        from tangier_api.api import ScheduleConnection
+        from tangier_api.settings import TESTING_SITE
         connection = ScheduleConnection()
         today = moment.utcnow().strftime("%Y-%m-%d")
         three_months_ago = moment.utcnow().add(months=-2).strftime("%Y-%m-%d")
@@ -21,7 +22,8 @@ class TestScheduleConnection(unittest.TestCase):
                         generate_empty_list_error_response(sys._getframe().f_code.co_name, 'schedule_list'))
 
     def test_get_schedules(self):
-        from tangier_api.api import ScheduleConnection, TESTING_SITE
+        from tangier_api.api import ScheduleConnection
+        from tangier_api.settings import TESTING_SITE
         connection = ScheduleConnection()
         today = moment.utcnow().strftime("%Y-%m-%d")
         three_months_ago = moment.utcnow().add(months=-2).strftime("%Y-%m-%d")
@@ -35,7 +37,8 @@ class TestScheduleConnection(unittest.TestCase):
                             generate_empty_list_error_response(sys._getframe().f_code.co_name, 'schedule_list'))
 
     def test_get_schedule_values_list(self):
-        from tangier_api.api import ScheduleConnection, TESTING_SITE
+        from tangier_api.api import ScheduleConnection
+        from tangier_api.settings import TESTING_SITE
         connection = ScheduleConnection()
         today = moment.utcnow().strftime("%Y-%m-%d")
         three_months_ago = moment.utcnow().add(months=-2).strftime("%Y-%m-%d")

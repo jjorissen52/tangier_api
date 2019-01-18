@@ -88,6 +88,17 @@
               <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Description</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#overview">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#installation">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#setup">Setup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#usage">Usage</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#logging-in">Logging In</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#raw-api-calls">Raw API Calls</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#get-schedule">Get Schedule</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#provider-maintenance">Provider Maintenance</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#location-maintenance">Location Maintenance</a></li>
+</ul>
+</li>
 </ul>
 
             
@@ -151,9 +162,167 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="description">
+  <blockquote>
+<div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="mi">88888888888</span>    <span class="n">d8888888b</span>    <span class="mi">888</span> <span class="o">.</span><span class="n">d8888b</span><span class="o">.</span> <span class="mi">888888888888888888888888</span><span class="n">b</span><span class="o">.</span>                <span class="n">d88888888888b</span><span class="o">.</span><span class="mi">8888888</span>
+    <span class="mi">888</span>       <span class="n">d888888888b</span>   <span class="mi">888</span><span class="n">d88P</span>  <span class="n">Y88b</span>  <span class="mi">888</span>  <span class="mi">888</span>       <span class="mi">888</span>   <span class="n">Y88b</span>              <span class="n">d88888888</span>   <span class="n">Y88b</span> <span class="mi">888</span>
+    <span class="mi">888</span>      <span class="n">d88P88888888b</span>  <span class="mi">888888</span>    <span class="mi">888</span>  <span class="mi">888</span>  <span class="mi">888</span>       <span class="mi">888</span>    <span class="mi">888</span>             <span class="n">d88P888888</span>    <span class="mi">888</span> <span class="mi">888</span>
+    <span class="mi">888</span>     <span class="n">d88P</span> <span class="mi">888888</span><span class="n">Y88b</span> <span class="mi">888888</span>         <span class="mi">888</span>  <span class="mi">8888888</span>   <span class="mi">888</span>   <span class="n">d88P</span>            <span class="n">d88P</span> <span class="mi">888888</span>   <span class="n">d88P</span> <span class="mi">888</span>
+    <span class="mi">888</span>    <span class="n">d88P</span>  <span class="mi">888888</span> <span class="n">Y88b888888</span>  <span class="mi">88888</span>  <span class="mi">888</span>  <span class="mi">888</span>       <span class="mi">8888888</span><span class="n">P</span><span class="s2">&quot;            d88P  8888888888P&quot;</span>  <span class="mi">888</span>
+    <span class="mi">888</span>   <span class="n">d88P</span>   <span class="mi">888888</span>  <span class="n">Y88888888</span>    <span class="mi">888</span>  <span class="mi">888</span>  <span class="mi">888</span>       <span class="mi">888</span> <span class="n">T88b</span>            <span class="n">d88P</span>   <span class="mi">888888</span>        <span class="mi">888</span>
+    <span class="mi">888</span>  <span class="n">d8888888888888</span>   <span class="n">Y8888Y88b</span>  <span class="n">d88P</span>  <span class="mi">888</span>  <span class="mi">888</span>       <span class="mi">888</span>  <span class="n">T88b</span>          <span class="n">d8888888888888</span>        <span class="mi">888</span>
+    <span class="mi">888</span> <span class="n">d88P</span>     <span class="mi">888888</span>    <span class="n">Y888</span> <span class="s2">&quot;Y8888P8888888888888888888888   T88b88888888d88P     888888      8888888</span>
+</pre></div>
+</div>
+</div></blockquote>
+<div class="section" id="description">
 <h1>Description<a class="headerlink" href="#description" title="Permalink to this headline">¶</a></h1>
-<p>A simple Python package to facilitate interactions with Tangier’s API</p>
+<p>A simple Python package to facilitate interactions with Tangier’s SOAP API.</p>
+</div>
+<div class="section" id="overview">
+<h1>Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h1>
+<p>Tangier API is a client library for using Python to interact with the Tangier’s SOAP API.</p>
+<p>Here, we will only be discussing methods that allow the user to perform queries from the API.
+All of the necessary methods to Create and Update via the API are also available in this library, but they will not be
+covered here.</p>
+<p>You can check the API documentation for more information on those methods.</p>
+</div>
+<div class="section" id="installation">
+<h1>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h1>
+<p>to install the latest version, you can just run</p>
+<div class="code bash highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">tangier</span><span class="o">-</span><span class="n">api</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="setup">
+<h1>Setup<a class="headerlink" href="#setup" title="Permalink to this headline">¶</a></h1>
+<p>You will need to have an active API account for Tangier and a config file that looks like the below</p>
+<div class="code text highlight-default notranslate"><div class="highlight"><pre><span></span>[tangier]
+username = api_user
+password = api_password
+schedule_endpoint = https://tangierweb.com/webservices/schedulerequest/schedulerequest.asmx?WSDL
+provider_endpoint = https://tangierweb.com/webservices/ProviderMaintenance/ProviderMaintenance.asmx?WSDL
+location_endpoint = https://tangierweb.com/webservices/LocationMaintenance/LocationMaintenance.asmx?WSDL
+testing_site = TESTING-SITE-ID
+testing_npi = 0000000000
+log_dir =
+</pre></div>
+</div>
+<p>You can store this file anywhere, but you need to make its location known to the interpreter that calls the API via the
+environment variable <code class="docutils literal notranslate"><span class="pre">TANGIER_CONF_FILE</span></code>.</p>
+</div>
+<div class="section" id="usage">
+<h1>Usage<a class="headerlink" href="#usage" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="logging-in">
+<h2>Logging In<a class="headerlink" href="#logging-in" title="Permalink to this headline">¶</a></h2>
+<div class="code python highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
+<span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s1">&#39;TANGIER_CONF_FILE&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;C:/path/to/tangier_api.conf&#39;</span>
+
+<span class="kn">from</span> <span class="nn">tangier_api</span> <span class="k">import</span> <span class="n">ProviderConnection</span><span class="p">,</span> <span class="n">LocationConnection</span><span class="p">,</span> <span class="n">ScheduleConnection</span>
+<span class="n">pconn</span> <span class="o">=</span> <span class="n">ProviderConnection</span><span class="p">()</span>
+<span class="n">lconn</span> <span class="o">=</span> <span class="n">LocationConnection</span><span class="p">()</span>
+<span class="n">sconn</span> <span class="o">=</span> <span class="n">ScheduleConnection</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>That’s it. You have three authenticated clients, one for each of these services.</p>
+</div>
+<div class="section" id="raw-api-calls">
+<h2>Raw API Calls<a class="headerlink" href="#raw-api-calls" title="Permalink to this headline">¶</a></h2>
+<p>Each of the above classes, ProviderConnection, LocationConnection, ScheduleConnection, im-
+plement a direct connection to Tangier’s SOAP endpoints. That means you could just use raw
+XML if you really wanted to. For example:</p>
+<div class="code python highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">tangier_api</span> <span class="k">import</span> <span class="n">settings</span>
+<span class="kn">import</span> <span class="nn">xmlmanip</span>
+<span class="n">lconn</span> <span class="o">=</span> <span class="n">LocationConnection</span><span class="p">()</span>
+<span class="n">xml</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">    &lt;tangier version=&quot;1.0&quot; method=&quot;location.request&quot;&gt;</span>
+<span class="s2">        &lt;admin_user&gt;</span><span class="si">{username}</span><span class="s2">&lt;/admin_user&gt;</span>
+<span class="s2">        &lt;admin_pwd&gt;</span><span class="si">{password}</span><span class="s2">&lt;/admin_pwd&gt;</span>
+<span class="s2">        &lt;locations&gt;</span>
+<span class="s2">            &lt;location action=&quot;info&quot;&gt;</span>
+<span class="s2">                &lt;site_id&gt;</span><span class="si">{site_id}</span><span class="s2">&lt;/site_id&gt;</span>
+<span class="s2">            &lt;/location&gt;</span>
+<span class="s2">        &lt;/locations&gt;</span>
+<span class="s2">    &lt;/tangier&gt;</span>
+<span class="s2">&quot;&quot;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+    <span class="n">username</span><span class="o">=</span><span class="n">settings</span><span class="o">.</span><span class="n">TANGIER_USERNAME</span><span class="p">,</span>
+    <span class="n">password</span><span class="o">=</span><span class="n">settings</span><span class="o">.</span><span class="n">TANGIER_PASSWORD</span><span class="p">,</span>
+    <span class="n">site_id</span><span class="o">=</span><span class="s2">&quot;YOUR-SITE-ID&quot;</span>
+<span class="p">)</span>
+
+<span class="n">response_xml</span> <span class="o">=</span> <span class="n">lconn</span><span class="o">.</span><span class="n">MaintainLocations</span><span class="p">(</span><span class="n">xml</span><span class="p">)</span>
+<span class="n">xmlmanip</span><span class="o">.</span><span class="n">print_xml</span><span class="p">(</span><span class="n">response_xml</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>This should make it fairly simple for you to write your own custom API calls if necessary.</p>
+</div>
+<div class="section" id="get-schedule">
+<h2>Get Schedule<a class="headerlink" href="#get-schedule" title="Permalink to this headline">¶</a></h2>
+<div class="code python highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sconn</span> <span class="o">=</span> <span class="n">ScheduleConnection</span><span class="p">()</span>
+
+<span class="c1"># you can do this by emp_id or site_id</span>
+<span class="n">response_xml</span> <span class="o">=</span> <span class="n">sconn</span><span class="o">.</span><span class="n">get_schedule</span><span class="p">(</span>
+    <span class="n">start_date</span><span class="o">=</span><span class="s1">&#39;2018-01-01&#39;</span><span class="p">,</span>
+    <span class="n">end_date</span><span class="o">=</span><span class="s1">&#39;2018-01-14&#39;</span><span class="p">,</span>
+    <span class="n">site_id</span><span class="o">=</span><span class="s1">&#39;YOUR-SITE-ID&#39;</span>
+<span class="p">)</span>
+<span class="c1"># returns a list of xml strings, used in other methods</span>
+<span class="n">response_xml_list</span> <span class="o">=</span> <span class="n">sconn</span><span class="o">.</span><span class="n">get_schedules</span><span class="p">(</span>
+    <span class="n">start_date</span><span class="o">=</span><span class="s1">&#39;2018-01-01&#39;</span><span class="p">,</span>
+    <span class="n">end_date</span><span class="o">=</span><span class="s1">&#39;2018-01-14&#39;</span><span class="p">,</span>
+    <span class="n">site_ids</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;YOUR-SITE-ID&#39;</span><span class="p">]</span>
+<span class="p">)</span>
+<span class="c1"># list of all of the shifts between the given dates for the given site ids</span>
+<span class="n">scheduled_shifts</span> <span class="o">=</span> <span class="n">sconn</span><span class="o">.</span><span class="n">get_schedule_values_list</span><span class="p">(</span>
+    <span class="n">start_date</span><span class="o">=</span><span class="s1">&#39;2018-01-01&#39;</span><span class="p">,</span>
+    <span class="n">end_date</span><span class="o">=</span><span class="s1">&#39;2018-01-14&#39;</span><span class="p">,</span>
+    <span class="n">site_ids</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;YOUR-SITE-ID&#39;</span><span class="p">,</span> <span class="s1">&#39;YOUR-SITE-ID-2&#39;</span><span class="p">]</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="provider-maintenance">
+<h2>Provider Maintenance<a class="headerlink" href="#provider-maintenance" title="Permalink to this headline">¶</a></h2>
+<div class="code python highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pconn</span> <span class="o">=</span> <span class="n">ProviderConnection</span><span class="p">()</span>
+<span class="c1"># returns xml corresponding to providers in Tangier with Primary Key in their Database of 1 and 2</span>
+<span class="n">response_xml</span> <span class="o">=</span> <span class="n">pconn</span><span class="o">.</span><span class="n">get_provider_info</span><span class="p">(</span>
+    <span class="c1"># do not include this variable if you want all_providers</span>
+    <span class="n">provider_ids</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">],</span>
+    <span class="c1"># you should just use this all the time</span>
+    <span class="n">use_primary_keys</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="c1"># bug, this field shouldn&#39;t be needed to prevent fetching of all but it is</span>
+    <span class="n">all_providers</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="c1"># wrapper around get_provider_info that returns a list of dicts instead of raw xml</span>
+<span class="n">provider_list</span> <span class="o">=</span> <span class="n">pconn</span><span class="o">.</span><span class="n">provider_info_values_list</span><span class="p">(</span>
+    <span class="c1"># do not include this variable if you want all_providers</span>
+    <span class="n">provider_ids</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">],</span>
+    <span class="c1"># you should just use this all the time</span>
+    <span class="n">use_primary_keys</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="c1"># bug, this field shouldn&#39;t be needed to prevent fetching of all but it is</span>
+    <span class="n">all_providers</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="location-maintenance">
+<h2>Location Maintenance<a class="headerlink" href="#location-maintenance" title="Permalink to this headline">¶</a></h2>
+<div class="code python highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">lconn</span> <span class="o">=</span> <span class="n">LocationConnection</span><span class="p">()</span>
+<span class="n">response_xml</span> <span class="o">=</span> <span class="n">lconn</span><span class="o">.</span><span class="n">get_locations_info</span><span class="p">(</span>
+    <span class="c1"># do not include variable if you want all sites</span>
+    <span class="n">site_ids</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;CRMC-APP&#39;</span><span class="p">]</span>
+<span class="p">)</span>
+<span class="c1"># no arguments means all sites in a list</span>
+<span class="n">location_list</span> <span class="o">=</span> <span class="n">lconn</span><span class="o">.</span><span class="n">location_info_values_list</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>I am not going to demonstrate any of the below, but you can see them in the
+<a class="reference external" href="https://jjorissen52.github.io/tangier_api/py-modindex.html">API documentation</a>  if necessary.</p>
+<div class="code python highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">lconn</span><span class="o">.</span><span class="n">add_location</span>
+<span class="n">lconn</span><span class="o">.</span><span class="n">update_location</span>
+<span class="n">lconn</span><span class="o">.</span><span class="n">delete_location</span>
+</pre></div>
+</div>
+</div>
 </div>
 
 

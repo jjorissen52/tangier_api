@@ -158,11 +158,11 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="tangier_api.api.html">tangier_api.api package</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="tangier_api.api.html#submodules">Submodules</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tangier_api.api.html#tangier-api-api-location-module">tangier_api.api.location module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tangier_api.api.html#tangier-api-api-provider-module">tangier_api.api.provider module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tangier_api.api.html#tangier-api-api-schedule-module">tangier_api.api.schedule module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tangier_api.api.html#tangier-api-api-specialty-module">tangier_api.api.specialty module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tangier_api.api.html#module-contents">Module contents</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tangier_api.api.html#module-tangier_api.api.location">tangier_api.api.location module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tangier_api.api.html#module-tangier_api.api.provider">tangier_api.api.provider module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tangier_api.api.html#module-tangier_api.api.schedule">tangier_api.api.schedule module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tangier_api.api.html#module-tangier_api.api.specialty">tangier_api.api.specialty module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tangier_api.api.html#module-tangier_api.api">Module contents</a></li>
 </ul>
 </li>
 </ul>
@@ -171,23 +171,114 @@
 <div class="section" id="submodules">
 <h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
 </div>
-<div class="section" id="tangier-api-exceptions-module">
-<h2>tangier_api.exceptions module<a class="headerlink" href="#tangier-api-exceptions-module" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="module-tangier_api.exceptions">
+<span id="tangier-api-exceptions-module"></span><h2>tangier_api.exceptions module<a class="headerlink" href="#module-tangier_api.exceptions" title="Permalink to this headline">¶</a></h2>
+<dl class="exception">
+<dt id="tangier_api.exceptions.APICallError">
+<em class="property">exception </em><code class="descclassname">tangier_api.exceptions.</code><code class="descname">APICallError</code><a class="reference internal" href="../_modules/tangier_api/exceptions.html#APICallError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tangier_api.exceptions.APICallError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">BaseException</span></code></p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="tangier_api.exceptions.APIError">
+<em class="property">exception </em><code class="descclassname">tangier_api.exceptions.</code><code class="descname">APIError</code><a class="reference internal" href="../_modules/tangier_api/exceptions.html#APIError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tangier_api.exceptions.APIError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">BaseException</span></code></p>
+</dd></dl>
+
 </div>
-<div class="section" id="tangier-api-helpers-module">
-<h2>tangier_api.helpers module<a class="headerlink" href="#tangier-api-helpers-module" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="module-tangier_api.helpers">
+<span id="tangier-api-helpers-module"></span><h2>tangier_api.helpers module<a class="headerlink" href="#module-tangier_api.helpers" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="tangier_api.helpers.date_ranges">
+<code class="descclassname">tangier_api.helpers.</code><code class="descname">date_ranges</code><span class="sig-paren">(</span><em>start_date</em>, <em>end_date</em>, <em>date_format='%Y-%m-%d'</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tangier_api/helpers.html#date_ranges"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tangier_api.helpers.date_ranges" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
 </div>
-<div class="section" id="tangier-api-settings-module">
-<h2>tangier_api.settings module<a class="headerlink" href="#tangier-api-settings-module" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="module-tangier_api.settings">
+<span id="tangier-api-settings-module"></span><h2>tangier_api.settings module<a class="headerlink" href="#module-tangier_api.settings" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="tangier_api.settings.read_config">
+<code class="descclassname">tangier_api.settings.</code><code class="descname">read_config</code><span class="sig-paren">(</span><em>keys</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tangier_api/settings.html#read_config"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tangier_api.settings.read_config" title="Permalink to this definition">¶</a></dt>
+<dd><p>We don’t want a failed import for bad config, we just want to set everything that is not in the config file/region
+set to None
+:param keys: (iterable) default keys to set to None
+:return:</p>
+</dd></dl>
+
 </div>
-<div class="section" id="tangier-api-tests-module">
-<h2>tangier_api.tests module<a class="headerlink" href="#tangier-api-tests-module" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="module-tangier_api.tests">
+<span id="tangier-api-tests-module"></span><h2>tangier_api.tests module<a class="headerlink" href="#module-tangier_api.tests" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="tangier_api.tests.TestLocationConnection">
+<em class="property">class </em><code class="descclassname">tangier_api.tests.</code><code class="descname">TestLocationConnection</code><span class="sig-paren">(</span><em>methodName='runTest'</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tangier_api/tests.html#TestLocationConnection"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tangier_api.tests.TestLocationConnection" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">unittest.case.TestCase</span></code></p>
+<dl class="method">
+<dt id="tangier_api.tests.TestLocationConnection.test_add_show_update_list_delete">
+<code class="descname">test_add_show_update_list_delete</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tangier_api/tests.html#TestLocationConnection.test_add_show_update_list_delete"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tangier_api.tests.TestLocationConnection.test_add_show_update_list_delete" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="tangier_api.tests.TestProviderConnection">
+<em class="property">class </em><code class="descclassname">tangier_api.tests.</code><code class="descname">TestProviderConnection</code><span class="sig-paren">(</span><em>methodName='runTest'</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tangier_api/tests.html#TestProviderConnection"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tangier_api.tests.TestProviderConnection" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">unittest.case.TestCase</span></code></p>
+<p>These tests all use provider_primary_key rather than emp_id since I only query by emp_id. Please provide
+implementations for emp_id if you need them.</p>
+<dl class="method">
+<dt id="tangier_api.tests.TestProviderConnection.test_get_provider_info">
+<code class="descname">test_get_provider_info</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tangier_api/tests.html#TestProviderConnection.test_get_provider_info"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tangier_api.tests.TestProviderConnection.test_get_provider_info" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tangier_api.tests.TestProviderConnection.test_provider_info_values_list">
+<code class="descname">test_provider_info_values_list</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tangier_api/tests.html#TestProviderConnection.test_provider_info_values_list"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tangier_api.tests.TestProviderConnection.test_provider_info_values_list" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="tangier_api.tests.TestScheduleConnection">
+<em class="property">class </em><code class="descclassname">tangier_api.tests.</code><code class="descname">TestScheduleConnection</code><span class="sig-paren">(</span><em>methodName='runTest'</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tangier_api/tests.html#TestScheduleConnection"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tangier_api.tests.TestScheduleConnection" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">unittest.case.TestCase</span></code></p>
+<dl class="method">
+<dt id="tangier_api.tests.TestScheduleConnection.test_get_schedule">
+<code class="descname">test_get_schedule</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tangier_api/tests.html#TestScheduleConnection.test_get_schedule"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tangier_api.tests.TestScheduleConnection.test_get_schedule" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tangier_api.tests.TestScheduleConnection.test_get_schedule_values_list">
+<code class="descname">test_get_schedule_values_list</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tangier_api/tests.html#TestScheduleConnection.test_get_schedule_values_list"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tangier_api.tests.TestScheduleConnection.test_get_schedule_values_list" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tangier_api.tests.TestScheduleConnection.test_get_schedules">
+<code class="descname">test_get_schedules</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tangier_api/tests.html#TestScheduleConnection.test_get_schedules"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tangier_api.tests.TestScheduleConnection.test_get_schedules" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="tangier_api.tests.generate_empty_list_error_response">
+<code class="descclassname">tangier_api.tests.</code><code class="descname">generate_empty_list_error_response</code><span class="sig-paren">(</span><em>test</em>, <em>list_name</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tangier_api/tests.html#generate_empty_list_error_response"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tangier_api.tests.generate_empty_list_error_response" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
 </div>
-<div class="section" id="tangier-api-wrappers-module">
-<h2>tangier_api.wrappers module<a class="headerlink" href="#tangier-api-wrappers-module" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="module-tangier_api.wrappers">
+<span id="tangier-api-wrappers-module"></span><h2>tangier_api.wrappers module<a class="headerlink" href="#module-tangier_api.wrappers" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="tangier_api.wrappers.debug_options">
+<code class="descclassname">tangier_api.wrappers.</code><code class="descname">debug_options</code><span class="sig-paren">(</span><em>method</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tangier_api/wrappers.html#debug_options"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tangier_api.wrappers.debug_options" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="tangier_api.wrappers.handle_response">
+<code class="descclassname">tangier_api.wrappers.</code><code class="descname">handle_response</code><span class="sig-paren">(</span><em>method</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tangier_api/wrappers.html#handle_response"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tangier_api.wrappers.handle_response" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
 </div>
-<div class="section" id="module-contents">
-<h2>Module contents<a class="headerlink" href="#module-contents" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="module-tangier_api">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-tangier_api" title="Permalink to this headline">¶</a></h2>
 </div>
 </div>
 

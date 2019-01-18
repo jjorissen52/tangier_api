@@ -55,7 +55,7 @@ class ProviderConnection:
         # return xml_string
         return self.MaintainProviders(xml_string).encode('utf-8')
 
-    def provider_info_values_list(self, **kwargs):
+    def provider_info_values_list(self, use_primary_keys=True, **kwargs):
         """
         Wrapper for get_provider info which converts the xml response into a list of dicts
         """
@@ -64,7 +64,7 @@ class ProviderConnection:
         if kwargs.get('all_providers'):
             id_label = 'provider_primary_key'
         else:
-            id_label = "provider_primary_key" if kwargs.get('use_primary_keys') else "emp_id"
+            id_label = "provider_primary_key" if use_primary_keys else "emp_id"
         # using contains method here is kind of hacky way to get every element with an {id_label} tag, basically I'm
         # just checking to see that the label even exists
         label_dict = {f"{id_label}__contains": ""}

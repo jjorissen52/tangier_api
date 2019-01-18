@@ -155,20 +155,513 @@
 <div class="section" id="submodules">
 <h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
 </div>
-<div class="section" id="tangier-api-api-location-module">
-<h2>tangier_api.api.location module<a class="headerlink" href="#tangier-api-api-location-module" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="module-tangier_api.api.location">
+<span id="tangier-api-api-location-module"></span><h2>tangier_api.api.location module<a class="headerlink" href="#module-tangier_api.api.location" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="tangier_api.api.location.LocationConnection">
+<em class="property">class </em><code class="descclassname">tangier_api.api.location.</code><code class="descname">LocationConnection</code><span class="sig-paren">(</span><em>xml_string=''</em>, <em>endpoint='https://tangierweb.com/webservices/LocationMaintenance/LocationMaintenance.asmx?WSDL'</em>, <em>show_xml_request=False</em>, <em>show_xml_response=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tangier_api/api/location.html#LocationConnection"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tangier_api.api.location.LocationConnection" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="method">
+<dt id="tangier_api.api.location.LocationConnection.MaintainLocations">
+<code class="descname">MaintainLocations</code><span class="sig-paren">(</span><em>xml_string</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tangier_api/api/location.html#LocationConnection.MaintainLocations"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tangier_api.api.location.LocationConnection.MaintainLocations" title="Permalink to this definition">¶</a></dt>
+<dd><p>WSDL GetLocation method</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>xml_string</strong> – (xml str) fully formed xml string for GetLocation request</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="tangier_api.api.location.LocationConnection.add_location">
+<code class="descname">add_location</code><span class="sig-paren">(</span><em>site_id=None</em>, <em>xml_string=None</em>, <em>name=None</em>, <em>short_name=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tangier_api/api/location.html#LocationConnection.add_location"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tangier_api.api.location.LocationConnection.add_location" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>site_id</strong> – (str) id of site to be added</li>
+<li><strong>xml_string</strong> – (xml string) overrides the default credential and/or location injection into base_xml</li>
+<li><strong>kwargs</strong> – additional named properties to be provided in the creation request.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">xml response string with an error message or info about a location.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="tangier_api.api.location.LocationConnection.delete_location">
+<code class="descname">delete_location</code><span class="sig-paren">(</span><em>site_id=None</em>, <em>xml_string=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tangier_api/api/location.html#LocationConnection.delete_location"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tangier_api.api.location.LocationConnection.delete_location" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>site_id</strong> – (str) id of site to be deleted</li>
+<li><strong>xml_string</strong> – (xml string) overrides the default credential and/or location injection into base_xml</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">xml response string with an error message or info about a location.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="tangier_api.api.location.LocationConnection.get_locations_info">
+<code class="descname">get_locations_info</code><span class="sig-paren">(</span><em>site_ids=None</em>, <em>xml_string=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tangier_api/api/location.html#LocationConnection.get_locations_info"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tangier_api.api.location.LocationConnection.get_locations_info" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>xml_string</strong> – (xml string) overrides the default credential and/or location injection into base_xml</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">xml response string with an error message or info about a location.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="tangier_api.api.location.LocationConnection.location_info_values_list">
+<code class="descname">location_info_values_list</code><span class="sig-paren">(</span><em>site_ids=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tangier_api/api/location.html#LocationConnection.location_info_values_list"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tangier_api.api.location.LocationConnection.location_info_values_list" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a Searchable List object (subclass of list) of all locations returned by get_locations_info
+:param provider_ids: (list) of all emp_ids corresponding to desired locations info
+:return: (SearchableList) of all locations returned by get_locations_info</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="tangier_api.api.location.LocationConnection.update_location">
+<code class="descname">update_location</code><span class="sig-paren">(</span><em>site_id=None</em>, <em>new_site_id=None</em>, <em>xml_string=None</em>, <em>name=None</em>, <em>short_name=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tangier_api/api/location.html#LocationConnection.update_location"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tangier_api.api.location.LocationConnection.update_location" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>site_id</strong> – (str) id of site to be added</li>
+<li><strong>new_site_id</strong> – (str) id of site to be renamed, if desired</li>
+<li><strong>xml_string</strong> – (xml string) overrides the default credential and/or location injection into base_xml</li>
+<li><strong>kwargs</strong> – additional named properties to be provided in the creation request.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">xml response string with an error message or info about a location.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
 </div>
-<div class="section" id="tangier-api-api-provider-module">
-<h2>tangier_api.api.provider module<a class="headerlink" href="#tangier-api-api-provider-module" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="module-tangier_api.api.provider">
+<span id="tangier-api-api-provider-module"></span><h2>tangier_api.api.provider module<a class="headerlink" href="#module-tangier_api.api.provider" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="tangier_api.api.provider.ProviderConnection">
+<em class="property">class </em><code class="descclassname">tangier_api.api.provider.</code><code class="descname">ProviderConnection</code><span class="sig-paren">(</span><em>xml_string=''</em>, <em>endpoint='https://tangierweb.com/webservices/ProviderMaintenance/ProviderMaintenance.asmx?WSDL'</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tangier_api/api/provider.html#ProviderConnection"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tangier_api.api.provider.ProviderConnection" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="method">
+<dt id="tangier_api.api.provider.ProviderConnection.MaintainProviders">
+<code class="descname">MaintainProviders</code><span class="sig-paren">(</span><em>xml_string=''</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tangier_api/api/provider.html#ProviderConnection.MaintainProviders"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tangier_api.api.provider.ProviderConnection.MaintainProviders" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tangier_api.api.provider.ProviderConnection.get_provider_info">
+<code class="descname">get_provider_info</code><span class="sig-paren">(</span><em>provider_ids=None</em>, <em>use_primary_keys=True</em>, <em>all_providers=True</em>, <em>xml_string=''</em>, <em>**tags</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tangier_api/api/provider.html#ProviderConnection.get_provider_info"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tangier_api.api.provider.ProviderConnection.get_provider_info" title="Permalink to this definition">¶</a></dt>
+<dd><p>Method to retrieve info on all providers corresponding to the list “provider_ids”</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>provider_ids</strong> – (list) of all emp_ids corresponding to desired provider info</li>
+<li><strong>use_primary_keys</strong> – (bool) indicates whether provider_ids should be treated as emp_id or provider_primary_key</li>
+<li><strong>all_providers</strong> – (bool) indicates whether to return data on all existing providers</li>
+<li><strong>xml_string</strong> – (xml string) overrides default xml string provided by the instantiation of the class object</li>
+<li><strong>tags</strong> – (kwargs) things to be injected into the request. ex: start_date=”2017-05-01”, end_date=”2017-05-02”</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="tangier_api.api.provider.ProviderConnection.provider_info_values_list">
+<code class="descname">provider_info_values_list</code><span class="sig-paren">(</span><em>use_primary_keys=True</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tangier_api/api/provider.html#ProviderConnection.provider_info_values_list"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tangier_api.api.provider.ProviderConnection.provider_info_values_list" title="Permalink to this definition">¶</a></dt>
+<dd><p>Wrapper for get_provider info which converts the xml response into a list of dicts</p>
+</dd></dl>
+
+</dd></dl>
+
 </div>
-<div class="section" id="tangier-api-api-schedule-module">
-<h2>tangier_api.api.schedule module<a class="headerlink" href="#tangier-api-api-schedule-module" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="module-tangier_api.api.schedule">
+<span id="tangier-api-api-schedule-module"></span><h2>tangier_api.api.schedule module<a class="headerlink" href="#module-tangier_api.api.schedule" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="tangier_api.api.schedule.ScheduleConnection">
+<em class="property">class </em><code class="descclassname">tangier_api.api.schedule.</code><code class="descname">ScheduleConnection</code><span class="sig-paren">(</span><em>xml_string=''</em>, <em>site_file=None</em>, <em>site_id_column_header='site_id'</em>, <em>testing=False</em>, <em>endpoint='https://tangierweb.com/webservices/schedulerequest/schedulerequest.asmx?WSDL'</em>, <em>debug=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tangier_api/api/schedule.html#ScheduleConnection"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tangier_api.api.schedule.ScheduleConnection" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="method">
+<dt id="tangier_api.api.schedule.ScheduleConnection.GetSchedule">
+<code class="descname">GetSchedule</code><span class="sig-paren">(</span><em>xml_string=''</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tangier_api/api/schedule.html#ScheduleConnection.GetSchedule"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tangier_api.api.schedule.ScheduleConnection.GetSchedule" title="Permalink to this definition">¶</a></dt>
+<dd><p>WSDL GetSchedule method</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>xml_string</strong> – (xml str) fully formed xml string for GetSchedule request</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tangier_api.api.schedule.ScheduleConnection.date_format">
+<code class="descname">date_format</code><em class="property"> = '%Y-%m-%d'</em><a class="headerlink" href="#tangier_api.api.schedule.ScheduleConnection.date_format" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="tangier_api.api.schedule.ScheduleConnection.datetime_format">
+<code class="descname">datetime_format</code><em class="property"> = '%Y-%m-%dT%H:%M:%S'</em><a class="headerlink" href="#tangier_api.api.schedule.ScheduleConnection.datetime_format" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tangier_api.api.schedule.ScheduleConnection.get_schedule">
+<code class="descname">get_schedule</code><span class="sig-paren">(</span><em>start_date=None</em>, <em>end_date=None</em>, <em>site_id=None</em>, <em>emp_id=None</em>, <em>xml_string=''</em>, <em>**tags</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tangier_api/api/schedule.html#ScheduleConnection.get_schedule"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tangier_api.api.schedule.ScheduleConnection.get_schedule" title="Permalink to this definition">¶</a></dt>
+<dd><p>Wrapper for the GetSchedule method which facilitates adding necessary tags to the default xml string. Pulls schedule for one site for a given date range.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>start_date</strong> – (str) %Y-%m-%d date string indicating the beginning of the range from which to pull the schedule</li>
+<li><strong>end_date</strong> – (str) %Y-%m-%d date string indicating the ending of the range from which to pull the schedule</li>
+<li><strong>site_id</strong> – (str or int) id corresponding to the site that the schedule will be pulled from</li>
+<li><strong>xml_string</strong> – (xml string)overrides the default credential and/or schedule injection into base_xml</li>
+<li><strong>tags</strong> – (kwargs) things to be injected into the request.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">xml response string with an error message or a schedule.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="tangier_api.api.schedule.ScheduleConnection.get_schedule_values_list">
+<code class="descname">get_schedule_values_list</code><span class="sig-paren">(</span><em>start_date=None</em>, <em>end_date=None</em>, <em>site_ids=None</em>, <em>emp_ids=None</em>, <em>xml_string=''</em>, <em>**tags</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tangier_api/api/schedule.html#ScheduleConnection.get_schedule_values_list"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tangier_api.api.schedule.ScheduleConnection.get_schedule_values_list" title="Permalink to this definition">¶</a></dt>
+<dd><p>Wrapper for the get_schedules function that returns the retrieved schedules as a list of dicts. This can easily be converted into a DataFrame</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>start_date</strong> – (str) %Y-%m-%d date string indicating the beginning of the range from which to pull the schedule</li>
+<li><strong>end_date</strong> – (str) %Y-%m-%d date string indicating the ending of the range from which to pull the schedule</li>
+<li><strong>site_ids</strong> – (list or None) list of ids corresponding to the site(s) that the schedule will be pulled from, defaults to the list pulled from site_file in the __init__ function</li>
+<li><strong>emp_ids</strong> – (list or None) list of emp_ids corresponding to the employee(s) that the schedule will be pulled for</li>
+<li><strong>xml_string</strong> – (xml string) overrides the default credential and/or schedule injection into base_xml</li>
+<li><strong>tags</strong> – (kwargs) things to be injected into the request.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">(OrderedDict) filled with schedules.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="tangier_api.api.schedule.ScheduleConnection.get_schedules">
+<code class="descname">get_schedules</code><span class="sig-paren">(</span><em>start_date=None</em>, <em>end_date=None</em>, <em>site_ids=None</em>, <em>xml_string=''</em>, <em>**tags</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tangier_api/api/schedule.html#ScheduleConnection.get_schedules"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tangier_api.api.schedule.ScheduleConnection.get_schedules" title="Permalink to this definition">¶</a></dt>
+<dd><p>Wrapper for the GetSchedule method which facilitates adding necessary tags to the default xml string.
+Pulls schedule for multiple sites for a given date range. Makes multiple API calls to get schedules from multiple facilities.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>start_date</strong> – (str) %Y-%m-%d date string indicating the beginning of the range from which to pull the schedule</li>
+<li><strong>end_date</strong> – (str) %Y-%m-%d date string indicating the ending of the range from which to pull the schedule</li>
+<li><strong>site_ids</strong> – (list or None) list of ids corresponding to the site(s) that the schedule will be pulled from, defaults to the list pulled from site_file in the __init__ function</li>
+<li><strong>xml_string</strong> – (xml string) overrides the default credential and/or schedule injection into base_xml</li>
+<li><strong>tags</strong> – (kwargs) things to be injected into the request.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">xml response string with an error message or a schedule.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tangier_api.api.schedule.ScheduleConnection.in_date_format">
+<code class="descname">in_date_format</code><em class="property"> = '%m/%d/%Y'</em><a class="headerlink" href="#tangier_api.api.schedule.ScheduleConnection.in_date_format" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="tangier_api.api.schedule.ScheduleConnection.time_format">
+<code class="descname">time_format</code><em class="property"> = '%I:%M %p'</em><a class="headerlink" href="#tangier_api.api.schedule.ScheduleConnection.time_format" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
 </div>
-<div class="section" id="tangier-api-api-specialty-module">
-<h2>tangier_api.api.specialty module<a class="headerlink" href="#tangier-api-api-specialty-module" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="module-tangier_api.api.specialty">
+<span id="tangier-api-api-specialty-module"></span><h2>tangier_api.api.specialty module<a class="headerlink" href="#module-tangier_api.api.specialty" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="tangier_api.api.specialty.ProviderLocations">
+<em class="property">class </em><code class="descclassname">tangier_api.api.specialty.</code><code class="descname">ProviderLocations</code><span class="sig-paren">(</span><em>pconn</em>, <em>lconn</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tangier_api/api/specialty.html#ProviderLocations"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tangier_api.api.specialty.ProviderLocations" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="attribute">
+<dt id="tangier_api.api.specialty.ProviderLocations.all_location_provider_values">
+<code class="descname">all_location_provider_values</code><a class="headerlink" href="#tangier_api.api.specialty.ProviderLocations.all_location_provider_values" title="Permalink to this definition">¶</a></dt>
+<dd><p>we want to go get them if an access is attempted and we haven’t gotten them already</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="tangier_api.api.specialty.ProviderLocations.join_all_locations_with_all_providers">
+<code class="descname">join_all_locations_with_all_providers</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tangier_api/api/specialty.html#ProviderLocations.join_all_locations_with_all_providers"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tangier_api.api.specialty.ProviderLocations.join_all_locations_with_all_providers" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tangier_api.api.specialty.ProviderLocations.location_provider_info">
+<code class="descname">location_provider_info</code><span class="sig-paren">(</span><em>site_id</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tangier_api/api/specialty.html#ProviderLocations.location_provider_info"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tangier_api.api.specialty.ProviderLocations.location_provider_info" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sends a provider info request info for all provider_ids for one site_id
+:param site_id_in: (str) site_id to get provider info for
+:return: xml with a provider info response</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="tangier_api.api.specialty.ProviderLocations.location_provider_values">
+<code class="descname">location_provider_values</code><span class="sig-paren">(</span><em>site_id</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tangier_api/api/specialty.html#ProviderLocations.location_provider_values"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tangier_api.api.specialty.ProviderLocations.location_provider_values" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="tangier_api.api.specialty.ProviderReport">
+<em class="property">class </em><code class="descclassname">tangier_api.api.specialty.</code><code class="descname">ProviderReport</code><span class="sig-paren">(</span><em>file</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tangier_api/api/specialty.html#ProviderReport"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tangier_api.api.specialty.ProviderReport" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#tangier_api.api.provider.ProviderConnection" title="tangier_api.api.provider.ProviderConnection"><code class="xref py py-class docutils literal notranslate"><span class="pre">tangier_api.api.provider.ProviderConnection</span></code></a></p>
+<dl class="method">
+<dt id="tangier_api.api.specialty.ProviderReport.add_to_report">
+<code class="descname">add_to_report</code><span class="sig-paren">(</span><em>*args</em>, <em>key_column='provider_id'</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tangier_api/api/specialty.html#ProviderReport.add_to_report"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tangier_api.api.specialty.ProviderReport.add_to_report" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adds the specified provider information to an excel or csv report according to NPI (emp_id)</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>args</strong> – (list) of provider fields to be retrieved from tangier and added to the report</li>
+<li><strong>key_column</strong> – (str) indicates the header name of the column that contains npis or emp_ids on the report</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">None</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="tangier_api.api.specialty.ScheduleManipulation">
+<em class="property">class </em><code class="descclassname">tangier_api.api.specialty.</code><code class="descname">ScheduleManipulation</code><span class="sig-paren">(</span><em>xml_string=''</em>, <em>site_file=None</em>, <em>site_id_column_header='site_id'</em>, <em>testing=False</em>, <em>endpoint='https://tangierweb.com/webservices/schedulerequest/schedulerequest.asmx?WSDL'</em>, <em>debug=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tangier_api/api/specialty.html#ScheduleManipulation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tangier_api.api.specialty.ScheduleManipulation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#tangier_api.api.schedule.ScheduleConnection" title="tangier_api.api.schedule.ScheduleConnection"><code class="xref py py-class docutils literal notranslate"><span class="pre">tangier_api.api.schedule.ScheduleConnection</span></code></a></p>
+<dl class="method">
+<dt id="tangier_api.api.specialty.ScheduleManipulation.generate_conflicts_report">
+<code class="descname">generate_conflicts_report</code><span class="sig-paren">(</span><em>conflicts</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tangier_api/api/specialty.html#ScheduleManipulation.generate_conflicts_report"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tangier_api.api.specialty.ScheduleManipulation.generate_conflicts_report" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tangier_api.api.specialty.ScheduleManipulation.generate_duplicates_report">
+<code class="descname">generate_duplicates_report</code><span class="sig-paren">(</span><em>dupes</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tangier_api/api/specialty.html#ScheduleManipulation.generate_duplicates_report"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tangier_api.api.specialty.ScheduleManipulation.generate_duplicates_report" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tangier_api.api.specialty.ScheduleManipulation.get_schedule_conflicts">
+<code class="descname">get_schedule_conflicts</code><span class="sig-paren">(</span><em>info=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tangier_api/api/specialty.html#ScheduleManipulation.get_schedule_conflicts"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tangier_api.api.specialty.ScheduleManipulation.get_schedule_conflicts" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets DataFrame of all entries where an employee worked a double-booked shift in the saved_schedule</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>info</strong> – (bool) whether or not to print out progress</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">(DataFrame) of all entries where an employee worked a double-booked shift</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="tangier_api.api.specialty.ScheduleManipulation.get_schedule_duplicates">
+<code class="descname">get_schedule_duplicates</code><span class="sig-paren">(</span><em>info=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tangier_api/api/specialty.html#ScheduleManipulation.get_schedule_duplicates"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tangier_api.api.specialty.ScheduleManipulation.get_schedule_duplicates" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets DataFrame of all duplicate entries in the saved_schedule</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>info</strong> – (bool) whether or not to print out progress</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">(DataFrame) of all duplicate entries</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="tangier_api.api.specialty.ScheduleManipulation.get_schedule_empties">
+<code class="descname">get_schedule_empties</code><span class="sig-paren">(</span><em>info=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tangier_api/api/specialty.html#ScheduleManipulation.get_schedule_empties"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tangier_api.api.specialty.ScheduleManipulation.get_schedule_empties" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets DataFrame of all entries from schedule which were not worked (reportedminutes == 0) in the saved_schedule</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>info</strong> – (bool) whether or not to print out progress</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">(DataFrame) of all entries from schedule which were not worked (reportedminutes == 0)</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="tangier_api.api.specialty.ScheduleManipulation.get_schedule_open">
+<code class="descname">get_schedule_open</code><span class="sig-paren">(</span><em>info=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tangier_api/api/specialty.html#ScheduleManipulation.get_schedule_open"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tangier_api.api.specialty.ScheduleManipulation.get_schedule_open" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets DataFrame of all entries from schedule where providername == “open” in the saved_schedule</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>info</strong> – (bool) whether or not to print out progress</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">(DataFrame) of all entries from schedule which were not worked (reportedminutes == 0)</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="tangier_api.api.specialty.ScheduleManipulation.remove_schedule_conflicts">
+<code class="descname">remove_schedule_conflicts</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tangier_api/api/specialty.html#ScheduleManipulation.remove_schedule_conflicts"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tangier_api.api.specialty.ScheduleManipulation.remove_schedule_conflicts" title="Permalink to this definition">¶</a></dt>
+<dd><p>Removes all conflicting entries in the saved_schedule</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="tangier_api.api.specialty.ScheduleManipulation.remove_schedule_duplicates">
+<code class="descname">remove_schedule_duplicates</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tangier_api/api/specialty.html#ScheduleManipulation.remove_schedule_duplicates"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tangier_api.api.specialty.ScheduleManipulation.remove_schedule_duplicates" title="Permalink to this definition">¶</a></dt>
+<dd><p>Removes all duplicate entries in the saved_schedule</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="tangier_api.api.specialty.ScheduleManipulation.remove_schedule_empties">
+<code class="descname">remove_schedule_empties</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tangier_api/api/specialty.html#ScheduleManipulation.remove_schedule_empties"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tangier_api.api.specialty.ScheduleManipulation.remove_schedule_empties" title="Permalink to this definition">¶</a></dt>
+<dd><p>Removes all entries from schedule which were not worked (reportedminutes == 0) in the saved_schedule</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="tangier_api.api.specialty.ScheduleManipulation.remove_schedule_open">
+<code class="descname">remove_schedule_open</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tangier_api/api/specialty.html#ScheduleManipulation.remove_schedule_open"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tangier_api.api.specialty.ScheduleManipulation.remove_schedule_open" title="Permalink to this definition">¶</a></dt>
+<dd><p>Removes all entries from schedule which are just open shifts (providername == ‘open’) in the saved_schedule</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="tangier_api.api.specialty.ScheduleManipulation.save_schedule_from_range">
+<code class="descname">save_schedule_from_range</code><span class="sig-paren">(</span><em>start_date=None</em>, <em>end_date=None</em>, <em>site_ids=None</em>, <em>xml_string=''</em>, <em>**tags</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tangier_api/api/specialty.html#ScheduleManipulation.save_schedule_from_range"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tangier_api.api.specialty.ScheduleManipulation.save_schedule_from_range" title="Permalink to this definition">¶</a></dt>
+<dd><p>Saves schedule for indicated date range and facilities to ScheduleConnection object</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>start_date</strong> – (str) %Y-%m-%d date string indicating the beginning of the range from which to pull the schedule</li>
+<li><strong>end_date</strong> – (str) %Y-%m-%d date string indicating the ending of the range from which to pull the schedule</li>
+<li><strong>site_ids</strong> – (list or None) list of ids corresponding to the site(s) that the schedule will be pulled from, defaults to the list pulled from site_file in the __init__ function</li>
+<li><strong>xml_string</strong> – (xml string) overrides the default credential and/or schedule injection into base_xml</li>
+<li><strong>tags</strong> – (kwargs) things to be injected into the request.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="tangier_api.api.specialty.ScheduleWithData">
+<em class="property">class </em><code class="descclassname">tangier_api.api.specialty.</code><code class="descname">ScheduleWithData</code><span class="sig-paren">(</span><em>schedule_connection</em>, <em>provider_connection</em>, <em>location_connection</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tangier_api/api/specialty.html#ScheduleWithData"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tangier_api.api.specialty.ScheduleWithData" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="method">
+<dt id="tangier_api.api.specialty.ScheduleWithData.save_schedule_from_range">
+<code class="descname">save_schedule_from_range</code><span class="sig-paren">(</span><em>start_date</em>, <em>end_date</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tangier_api/api/specialty.html#ScheduleWithData.save_schedule_from_range"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tangier_api.api.specialty.ScheduleWithData.save_schedule_from_range" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
 </div>
-<div class="section" id="module-contents">
-<h2>Module contents<a class="headerlink" href="#module-contents" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="module-tangier_api.api">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-tangier_api.api" title="Permalink to this headline">¶</a></h2>
 </div>
 </div>
 
