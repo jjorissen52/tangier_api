@@ -1,3 +1,4 @@
+import re
 import datetime
 import pandas
 import numpy
@@ -12,10 +13,12 @@ from tangier_api.exceptions import APICallError
 
 
 class ScheduleConnection:
-    in_date_format = "%m/%d/%Y"
-    datetime_format = "%Y-%m-%dT%H:%M:%S"
-    date_format = "%Y-%m-%d"
-    time_format = "%I:%M %p"
+    in_date_format = "%m/%d/%Y"  # API sometimes returns dates in this format
+    datetime_format = "%Y-%m-%dT%H:%M:%S"  # standard ISOformat datetime
+    date_format = "%Y-%m-%d"  # API requires dates as arguments in this format
+    time_format = "%I:%M %p"  # API sometimes returns times in this format
+    full_date_pattern = "\d{1,2}/\d{1,2}/\d{4} \d{1,2}:\d{2} (AM|PM)"
+    full_date_regex = re.compile(full_date_pattern)
 
     def __init__(self, xml_string="", site_file=None, site_id_column_header='site_id', testing=False,
                  endpoint=settings.SCHEDULE_ENDPOINT, debug=False):
@@ -75,7 +78,7 @@ class ScheduleConnection:
             shifts_list = [shifts['shifts']['shift']]
 
         def to_iso(shift_time, shifts_date):
-            return ScheduleConnection._time_and_date_to_iso(shift_time, shifts_date)
+            return self._time_and_date_to_iso(shift_time, shifts_date)
 
         shifts_with_start_dates = list(map(lambda x: {"shift_start_date": to_iso(x['actualstarttime'],
                                                                                  shifts_date),
@@ -97,9 +100,17 @@ class ScheduleConnection:
         end_datetime_str = end_datetime.isoformat()
         return {"shift_end_date": end_datetime_str, **shift}
 
-    @staticmethod
-    def _time_and_date_to_iso(time, date, time_format=time_format, date_format=date_format):
-        return datetime.datetime.strptime(f'{time} {date}', f'{time_format} {date_format}').isoformat()
+    def _time_and_date_to_iso(self, time, date):
+        # Older Tangier API servers return just %I:%M %p while newer ones have been updated to use
+        # %m/%d/%Y %I:%M %p. This is is not consistent across API v1.0, unfortunately so
+        # we have to check.
+        if self.full_date_regex.match(time):
+            datetime_str = time
+            datetime_fmt = f'{self.in_date_format} {self.time_format}'
+        else:
+            datetime_str = f'{time} {date}'
+            datetime_fmt = f'{self.time_format} {self.date_format}'
+        return datetime.datetime.strptime(datetime_str, datetime_fmt).isoformat()
 
     def get_schedule(self, start_date=None, end_date=None, site_id=None, emp_id=None, xml_string="", **tags):
         """
